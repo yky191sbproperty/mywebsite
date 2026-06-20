@@ -1,0 +1,1546 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Merlin AI · Rex Yap Command Center 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>
+:root{
+  --bg:#05060a;--s1:#0c0e14;--s2:#12151e;--s3:#181c28;
+  --bd:rgba(255,255,255,.06);--bd2:rgba(255,255,255,.1);
+  --tx:#e8edf5;--mu:#4a5568;--mu2:#6b7a99;
+  --g1:#00ff87;--g2:#00d4ff;--gold:#f5a623;--red:#ff4d6d;
+  --purple:#a855f7;--wa:#25d366;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;opacity:.018;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");pointer-events:none;z-index:9999}
+
+/* SIDEBAR */
+.sb{position:fixed;top:0;left:0;bottom:0;width:220px;background:var(--s1);border-right:1px solid var(--bd);display:flex;flex-direction:column;z-index:200}
+.logo-area{padding:22px 20px 18px;border-bottom:1px solid var(--bd)}
+.logo-mark{display:flex;align-items:center;gap:9px;margin-bottom:5px}
+.lm-icon{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--g1),var(--g2));display:flex;align-items:center;justify-content:center;font-size:1rem;box-shadow:0 0 18px rgba(0,255,135,.3)}
+.lm-name{font-size:.95rem;font-weight:700;letter-spacing:-.02em;background:linear-gradient(90deg,var(--g1),var(--g2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lm-sub{font-family:'JetBrains Mono',monospace;font-size:.57rem;color:var(--mu);letter-spacing:.08em;text-transform:uppercase}
+.nav-sec{padding:12px 10px;flex:1;overflow-y:auto}
+.nav-lbl{font-size:.54rem;color:var(--mu);letter-spacing:.14em;text-transform:uppercase;font-family:'JetBrains Mono',monospace;padding:10px 10px 4px;margin-top:2px}
+.ni{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;font-size:.81rem;font-weight:500;color:var(--mu2);cursor:pointer;transition:all .18s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;position:relative}
+.ni:hover{background:var(--s2);color:var(--tx)}
+.ni.on{background:rgba(0,255,135,.07);color:var(--g1);font-weight:600}
+.ni.on::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:60%;border-radius:2px;background:var(--g1)}
+.ni-icon{width:18px;text-align:center;font-size:.85rem}
+.ni-badge{margin-left:auto;background:var(--g1);color:#000;font-size:.57rem;font-weight:700;padding:1px 6px;border-radius:20px;font-family:'JetBrains Mono',monospace}
+.sb-footer{padding:14px 20px;border-top:1px solid var(--bd)}
+.live-ind{display:flex;align-items:center;gap:7px;font-family:'JetBrains Mono',monospace;font-size:.61rem;color:var(--mu2)}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--g1);box-shadow:0 0 8px var(--g1);animation:beat 2s infinite}
+.last-upd-txt{font-family:'JetBrains Mono',monospace;font-size:.56rem;color:var(--mu);margin-top:2px}
+@keyframes beat{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.3);opacity:.6}}
+
+/* MAIN */
+.main{margin-left:220px;min-height:100vh}
+.view{display:none;padding:30px 36px;animation:fadeUp .28s ease}
+.view.on{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+
+/* TOPBAR */
+.topbar{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:26px}
+.tb-left .page-title{font-family:'Instrument Serif',serif;font-size:2rem;font-weight:400;letter-spacing:-.03em;line-height:1.1}
+.tb-left .page-title em{font-style:italic;color:var(--g1)}
+.tb-left .page-sub{font-size:.75rem;color:var(--mu2);margin-top:4px;font-family:'JetBrains Mono',monospace}
+.tb-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.lang-sw{display:flex;gap:2px;background:var(--s2);border-radius:8px;padding:3px}
+.lb{padding:4px 10px;border-radius:5px;font-size:.67rem;font-weight:600;cursor:pointer;border:none;background:none;color:var(--mu2);transition:all .18s;font-family:'JetBrains Mono',monospace}
+.lb.on{background:var(--s3);color:var(--g1)}
+.btn{padding:7px 14px;border-radius:8px;font-size:.77rem;font-weight:600;cursor:pointer;border:none;font-family:'Space Grotesk',sans-serif;transition:all .2s;display:inline-flex;align-items:center;gap:5px}
+.btn-ghost{background:var(--s2);color:var(--mu2);border:1px solid var(--bd)}
+.btn-ghost:hover{color:var(--tx);border-color:var(--bd2)}
+.btn-primary{background:linear-gradient(135deg,var(--g1),var(--g2));color:#000;font-weight:700;box-shadow:0 4px 18px rgba(0,255,135,.2)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 26px rgba(0,255,135,.3)}
+
+/* WA BAR */
+.wa-bar{background:linear-gradient(135deg,rgba(37,211,102,.05),rgba(0,212,255,.03));border:1px solid rgba(37,211,102,.14);border-radius:12px;padding:10px 15px;margin-bottom:22px;display:flex;align-items:center;gap:11px;flex-wrap:wrap}
+.wa-lbl{font-size:.66rem;color:var(--wa);font-weight:700;font-family:'JetBrains Mono',monospace;white-space:nowrap}
+.wa-input{background:rgba(0,0,0,.4);border:1px solid rgba(37,211,102,.22);border-radius:7px;padding:5px 11px;font-size:.77rem;color:var(--tx);outline:none;font-family:'JetBrains Mono',monospace;width:175px;transition:border .2s}
+.wa-input:focus{border-color:var(--wa)}
+.tog-wrap{display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none}
+.tog-track{width:36px;height:19px;background:var(--s3);border-radius:10px;border:1px solid var(--bd2);position:relative;transition:all .25s}
+.tog-track.on{background:rgba(37,211,102,.2);border-color:var(--wa)}
+.tog-knob{width:13px;height:13px;border-radius:50%;background:var(--mu);position:absolute;top:2px;left:2px;transition:all .25s}
+.tog-track.on .tog-knob{left:19px;background:var(--wa);box-shadow:0 0 8px rgba(37,211,102,.5)}
+.tog-lbl{font-size:.71rem;color:var(--mu2);font-weight:500}
+.wa-status{font-size:.66rem;color:var(--mu);margin-left:auto;font-family:'JetBrains Mono',monospace}
+
+/* STATS GRID */
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:11px;margin-bottom:22px}
+.stat-card{background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;position:relative;overflow:hidden;transition:border .2s}
+.stat-card:hover{border-color:var(--bd2)}
+.stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.c-g::after{background:linear-gradient(90deg,var(--g1),var(--g2))}
+.c-b::after{background:linear-gradient(90deg,var(--g2),#6ee7f7)}
+.c-gold::after{background:linear-gradient(90deg,var(--gold),#f7c948)}
+.c-pu::after{background:linear-gradient(90deg,var(--purple),#c084fc)}
+.c-r::after{background:linear-gradient(90deg,var(--red),#ff8fa3)}
+.sc-label{font-size:.59rem;color:var(--mu2);text-transform:uppercase;letter-spacing:.1em;font-family:'JetBrains Mono',monospace;margin-bottom:6px}
+.sc-num{font-family:'JetBrains Mono',monospace;font-size:1.65rem;font-weight:500;line-height:1;letter-spacing:-.04em}
+.c-g .sc-num{color:var(--g1)}.c-b .sc-num{color:var(--g2)}.c-gold .sc-num{color:var(--gold)}.c-pu .sc-num{color:var(--purple)}.c-r .sc-num{color:var(--red)}
+.sc-sub{font-size:.61rem;color:var(--mu);margin-top:4px}
+
+/* AI BAR */
+.ai-bar{background:linear-gradient(135deg,rgba(168,85,247,.07),rgba(0,255,135,.04));border:1px solid rgba(168,85,247,.18);border-radius:12px;padding:10px 15px;margin-bottom:18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ai-lbl{font-size:.68rem;font-weight:700;color:var(--purple);font-family:'JetBrains Mono',monospace}
+.ai-desc{font-size:.71rem;color:var(--mu2)}
+.ai-btn{padding:5px 13px;border-radius:6px;font-size:.71rem;font-weight:600;cursor:pointer;border:1px solid rgba(168,85,247,.3);background:rgba(168,85,247,.12);color:var(--purple);font-family:'Space Grotesk',sans-serif;transition:all .18s;margin-left:auto}
+.ai-btn:hover{background:rgba(168,85,247,.22)}
+
+/* DEMO BAR */
+.demo-bar{background:rgba(245,166,35,.05);border:1px solid rgba(245,166,35,.18);border-radius:8px;padding:8px 13px;font-size:.71rem;color:var(--gold);margin-bottom:14px;display:none;align-items:center;gap:7px}
+
+/* FILTERS */
+.filter-row{display:flex;gap:6px;margin-bottom:13px;flex-wrap:wrap;align-items:center}
+.fc{padding:4px 12px;border-radius:20px;font-size:.71rem;font-weight:600;cursor:pointer;border:1px solid var(--bd);background:var(--s2);color:var(--mu2);transition:all .18s}
+.fc:hover{color:var(--tx);border-color:var(--bd2)}
+.fc.on{background:rgba(0,255,135,.08);color:var(--g1);border-color:rgba(0,255,135,.3)}
+.fc.r-rent.on{background:rgba(0,212,255,.08);color:var(--g2);border-color:rgba(0,212,255,.3)}
+.fc.r-mm2h.on{background:rgba(245,166,35,.08);color:var(--gold);border-color:rgba(245,166,35,.3)}
+.fc.r-contact.on{background:rgba(168,85,247,.08);color:var(--purple);border-color:rgba(168,85,247,.3)}
+.fc.r-anon.on{background:rgba(255,77,109,.08);color:var(--red);border-color:rgba(255,77,109,.3)}
+.search-inp{margin-left:auto;background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:5px 12px;font-size:.77rem;color:var(--tx);outline:none;font-family:'Space Grotesk',sans-serif;min-width:195px;transition:border .2s}
+.search-inp:focus{border-color:rgba(0,255,135,.3)}
+.search-inp::placeholder{color:var(--mu)}
+.sort-sel{background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:5px 10px;font-size:.71rem;color:var(--tx);outline:none;cursor:pointer;font-family:'Space Grotesk',sans-serif}
+
+/* LEAD CARD */
+.leads-list{display:flex;flex-direction:column;gap:6px}
+.lcard{background:var(--s1);border:1px solid var(--bd);border-radius:12px;display:flex;transition:all .2s;cursor:pointer;position:relative;overflow:hidden}
+.lcard::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;opacity:0;transition:opacity .2s}
+.lcard.t-buy::before{background:var(--g1)}.lcard.t-rent::before{background:var(--g2)}
+.lcard.t-mm2h::before{background:var(--gold)}.lcard.t-contact::before{background:var(--purple)}.lcard.t-chat::before{background:var(--red)}
+.lcard.t-newlaunch::before{background:#f97316}.lcard.t-foreign::before{background:#06b6d4}
+.lcard:hover{border-color:var(--bd2);background:#0e1018}.lcard:hover::before,.lcard.sel::before{opacity:1}
+.lcard.sel{border-color:rgba(0,255,135,.2);background:rgba(0,255,135,.02)}
+.lcard-inner{display:flex;gap:13px;align-items:flex-start;padding:13px 15px;width:100%}
+.av{width:37px;height:37px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0}
+.t-buy .av{background:rgba(0,255,135,.1)}.t-rent .av{background:rgba(0,212,255,.1)}
+.t-mm2h .av{background:rgba(245,166,35,.1)}.t-contact .av{background:rgba(168,85,247,.1)}.t-chat .av{background:rgba(255,77,109,.1)}
+.t-newlaunch .av{background:rgba(249,115,22,.1)}.t-foreign .av{background:rgba(6,182,212,.1)}
+.lc-body{flex:1;min-width:0}
+.lc-head{display:flex;align-items:center;gap:5px;margin-bottom:4px;flex-wrap:wrap}
+.lc-id{font-family:'JetBrains Mono',monospace;font-size:.61rem;color:var(--mu)}
+.badge{font-size:.57rem;padding:2px 7px;border-radius:20px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.t-buy .badge{background:rgba(0,255,135,.1);color:var(--g1)}.t-rent .badge{background:rgba(0,212,255,.1);color:var(--g2)}
+.t-mm2h .badge{background:rgba(245,166,35,.1);color:var(--gold)}.t-contact .badge{background:rgba(168,85,247,.1);color:var(--purple)}.t-chat .badge{background:rgba(255,77,109,.1);color:var(--red)}
+.t-newlaunch .badge{background:rgba(249,115,22,.1);color:#f97316}.t-foreign .badge{background:rgba(6,182,212,.1);color:#06b6d4}
+.lc-name{font-size:.79rem;font-weight:600}
+.anon-pill{font-size:.57rem;padding:2px 7px;border-radius:20px;background:rgba(255,77,109,.08);color:var(--red);border:1px solid rgba(255,77,109,.2);font-family:'JetBrains Mono',monospace;font-weight:600}
+.return-pill{font-size:.57rem;padding:2px 7px;border-radius:20px;background:rgba(168,85,247,.08);color:var(--purple);border:1px solid rgba(168,85,247,.2);font-family:'JetBrains Mono',monospace}
+.lang-pill{font-size:.54rem;padding:1px 5px;border-radius:4px;background:var(--s3);border:1px solid var(--bd);color:var(--mu2);font-family:'JetBrains Mono',monospace;text-transform:uppercase}
+.lc-time{font-family:'JetBrains Mono',monospace;font-size:.61rem;color:var(--mu);margin-left:auto;white-space:nowrap}
+.lc-summary{font-size:.78rem;color:var(--mu2);margin-bottom:5px;line-height:1.45}
+.lc-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px}
+.tag{background:var(--s3);border:1px solid var(--bd);border-radius:5px;padding:2px 7px;font-size:.64rem;color:var(--mu2)}
+.lc-contact{font-family:'JetBrains Mono',monospace;font-size:.69rem;color:var(--g1);font-weight:500}
+.lc-note-pre{font-size:.64rem;color:var(--mu);font-style:italic;margin-top:2px}
+.ai-chip{font-size:.6rem;padding:2px 7px;border-radius:4px;background:rgba(168,85,247,.1);color:var(--purple);border:1px solid rgba(168,85,247,.2);font-family:'JetBrains Mono',monospace}
+.lc-actions{display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex-shrink:0}
+.status-sel{background:var(--s2);border:1px solid var(--bd);color:var(--mu2);border-radius:6px;padding:4px 7px;font-size:.66rem;font-family:'Space Grotesk',sans-serif;cursor:pointer;outline:none;transition:all .18s}
+.status-sel.new{border-color:rgba(0,255,135,.3);color:var(--g1);background:rgba(0,255,135,.05)}
+.status-sel.contacted{border-color:rgba(0,212,255,.3);color:var(--g2);background:rgba(0,212,255,.05)}
+.status-sel.closed{border-color:rgba(245,166,35,.3);color:var(--gold);background:rgba(245,166,35,.05)}
+.wa-chip{background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;border:none;border-radius:6px;padding:4px 9px;font-size:.64rem;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:3px;transition:opacity .2s;font-family:'Space Grotesk',sans-serif}
+.wa-chip:hover{opacity:.85}
+.del-btn{background:none;border:none;color:var(--mu);cursor:pointer;font-size:.64rem;padding:2px 6px;border-radius:4px;transition:all .18s;font-family:'JetBrains Mono',monospace}
+.del-btn:hover{color:var(--red);background:rgba(255,77,109,.08)}
+.new-dot{width:7px;height:7px;border-radius:50%;background:var(--g1);box-shadow:0 0 8px var(--g1);position:absolute;top:13px;right:13px;animation:beat 2s infinite}
+
+/* DETAIL PANEL */
+.detail-panel{background:var(--s1);border:1px solid var(--bd);border-radius:12px;margin-bottom:7px;overflow:hidden;animation:fadeUp .22s ease}
+.dp-tabs{display:flex;border-bottom:1px solid var(--bd);background:var(--bg)}
+.dp-tab{padding:10px 15px;font-size:.74rem;font-weight:600;color:var(--mu2);cursor:pointer;border-bottom:2px solid transparent;transition:all .18s;border:none;background:none;font-family:'Space Grotesk',sans-serif}
+.dp-tab:hover{color:var(--tx)}
+.dp-tab.on{color:var(--g1);border-bottom-color:var(--g1)}
+.dp-body{padding:17px}
+.dp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:13px}
+.dp-field label{font-size:.57rem;color:var(--mu);display:block;text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;margin-bottom:3px}
+.dp-field .fv{font-size:.79rem;font-weight:500}
+.dp-field .fv a{color:var(--g1);text-decoration:none}
+.phone-edit{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.phone-inp{background:var(--bg);border:1px solid var(--bd2);border-radius:6px;padding:4px 10px;font-size:.74rem;color:var(--tx);outline:none;font-family:'JetBrains Mono',monospace;width:150px;transition:border .2s}
+.phone-inp:focus{border-color:var(--g1)}
+.save-btn{background:var(--g1);color:#000;border:none;border-radius:5px;padding:4px 10px;font-size:.69rem;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif}
+
+/* AI SUMMARY BOX */
+.ai-summary-box{background:linear-gradient(135deg,rgba(168,85,247,.06),rgba(0,255,135,.03));border:1px solid rgba(168,85,247,.18);border-radius:10px;padding:12px 14px;margin-bottom:11px}
+.ai-sum-head{display:flex;align-items:center;gap:7px;margin-bottom:7px}
+.ai-logo-sm{width:21px;height:21px;border-radius:5px;background:linear-gradient(135deg,var(--purple),var(--g1));display:flex;align-items:center;justify-content:center;font-size:.62rem}
+.ai-sum-lbl{font-size:.62rem;color:var(--purple);font-family:'JetBrains Mono',monospace;font-weight:700;text-transform:uppercase;letter-spacing:.07em}
+.ai-sum-gen{margin-left:auto;padding:3px 9px;border-radius:5px;font-size:.64rem;font-weight:600;cursor:pointer;border:1px solid rgba(168,85,247,.3);background:rgba(168,85,247,.1);color:var(--purple);font-family:'Space Grotesk',sans-serif;transition:all .18s}
+.ai-sum-gen:hover{background:rgba(168,85,247,.2)}
+.ai-sum-text{font-size:.77rem;color:var(--mu2);line-height:1.6;font-style:italic;min-height:22px}
+
+/* VISITOR HISTORY */
+.vh-box{background:rgba(168,85,247,.04);border:1px solid rgba(168,85,247,.14);border-radius:10px;padding:12px 14px;margin-bottom:11px}
+.vh-head{font-size:.61rem;color:var(--purple);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px;font-weight:700}
+.vh-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--bd);font-size:.71rem}
+.vh-row:last-child{border-bottom:none}
+.vh-flow{color:var(--tx)}.vh-time{color:var(--mu);font-family:'JetBrains Mono',monospace;font-size:.64rem}
+.vh-curr{color:var(--g1);font-size:.59rem;margin-left:4px}
+
+/* WA SECTION */
+.wa-sec{background:rgba(37,211,102,.04);border:1px solid rgba(37,211,102,.12);border-radius:10px;padding:12px 14px;margin-bottom:11px}
+.sec-head{font-size:.61rem;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px;font-weight:700}
+.wa-sec .sec-head{color:var(--wa)}
+.wa-prev-text{font-size:.71rem;color:var(--mu2);font-family:'JetBrains Mono',monospace;line-height:1.7;white-space:pre-wrap;word-break:break-word;max-height:120px;overflow-y:auto;margin-bottom:9px}
+.wa-actions{display:flex;gap:6px;flex-wrap:wrap}
+.wa-send-self{background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;border:none;border-radius:7px;padding:7px 14px;font-size:.74rem;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:5px;transition:opacity .2s;font-family:'Space Grotesk',sans-serif}
+.wa-send-self:hover{opacity:.85}
+.wa-send-cust{background:linear-gradient(135deg,#075e54,#128c7e);color:#fff;border:none;border-radius:7px;padding:7px 14px;font-size:.74rem;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:5px;transition:opacity .2s;font-family:'Space Grotesk',sans-serif}
+.wa-send-cust:hover{opacity:.85}
+.copy-btn{background:var(--s2);color:var(--mu2);border:1px solid var(--bd);border-radius:7px;padding:7px 11px;font-size:.74rem;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:all .2s}
+.copy-btn:hover{color:var(--tx);border-color:var(--bd2)}
+
+/* TEMPLATES */
+.tpl-sec{background:rgba(0,212,255,.04);border:1px solid rgba(0,212,255,.12);border-radius:10px;padding:12px 14px;margin-bottom:11px}
+.tpl-sec .sec-head{color:var(--g2)}
+.tpl-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.tpl-btn{background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:8px 10px;font-size:.71rem;color:var(--tx);cursor:pointer;text-align:left;transition:all .2s;font-family:'Space Grotesk',sans-serif;line-height:1.4;text-decoration:none;display:block}
+.tpl-btn:hover{border-color:rgba(0,212,255,.3);background:rgba(0,212,255,.05);color:var(--g2)}
+.tpl-type{font-size:.59rem;font-weight:700;color:var(--g2);display:block;margin-bottom:2px;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.06em}
+
+/* AI REPLY */
+.ai-reply-sec{background:linear-gradient(135deg,rgba(168,85,247,.06),rgba(0,255,135,.03));border:1px solid rgba(168,85,247,.17);border-radius:10px;padding:13px 14px;margin-bottom:11px}
+.ai-reply-sec .sec-head{color:var(--purple)}
+.ai-tone-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:9px}
+.tone-btn{padding:4px 10px;border-radius:20px;font-size:.64rem;font-weight:600;cursor:pointer;border:1px solid var(--bd);background:var(--s2);color:var(--mu2);transition:all .18s;font-family:'Space Grotesk',sans-serif}
+.tone-btn.on{background:rgba(168,85,247,.12);color:var(--purple);border-color:rgba(168,85,247,.3)}
+.ai-output{background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:10px 12px;font-size:.74rem;color:var(--mu2);font-family:'JetBrains Mono',monospace;line-height:1.65;white-space:pre-wrap;min-height:48px;margin-bottom:8px;word-break:break-word}
+.ai-gen-row{display:flex;gap:6px;flex-wrap:wrap}
+.ai-gen-full{background:linear-gradient(135deg,var(--purple),#8b5cf6);color:#fff;border:none;border-radius:7px;padding:7px 14px;font-size:.74rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:all .2s;font-family:'Space Grotesk',sans-serif}
+.ai-gen-full:hover{opacity:.88;transform:translateY(-1px)}
+.ai-gen-full:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.ai-gen-wa{background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;border:none;border-radius:7px;padding:7px 13px;font-size:.74rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:opacity .2s;font-family:'Space Grotesk',sans-serif;text-decoration:none}
+.ai-gen-wa:hover{opacity:.85}
+
+.note-area{width:100%;background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:9px 12px;color:var(--tx);font-family:'Space Grotesk',sans-serif;font-size:.77rem;resize:vertical;min-height:52px;outline:none;transition:border .2s}
+.note-area:focus{border-color:rgba(0,255,135,.22)}
+
+/* ANALYTICS */
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.a-block{background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:19px}
+.a-title{font-size:.81rem;font-weight:700;margin-bottom:15px}
+.bar-row{margin-bottom:10px}
+.br-top{display:flex;justify-content:space-between;font-size:.75rem;margin-bottom:4px}
+.br-count{font-family:'JetBrains Mono',monospace}
+.bar-track{height:5px;background:var(--s3);border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:width .6s cubic-bezier(.34,1.56,.64,1)}
+
+/* AI INSIGHTS */
+.ai-insights{background:linear-gradient(135deg,rgba(168,85,247,.07),rgba(0,255,135,.04));border:1px solid rgba(168,85,247,.17);border-radius:12px;padding:19px;margin-bottom:16px}
+.ai-ins-head{display:flex;align-items:center;gap:8px;margin-bottom:11px}
+.ai-ins-icon{width:27px;height:27px;border-radius:7px;background:linear-gradient(135deg,var(--purple),var(--g1));display:flex;align-items:center;justify-content:center;font-size:.82rem}
+.ai-ins-title{font-size:.86rem;font-weight:700}
+.ai-ins-btn{margin-left:auto;padding:5px 12px;border-radius:6px;font-size:.71rem;font-weight:600;cursor:pointer;border:1px solid rgba(168,85,247,.28);background:rgba(168,85,247,.1);color:var(--purple);font-family:'Space Grotesk',sans-serif;transition:all .18s}
+.ai-ins-btn:hover{background:rgba(168,85,247,.2)}
+.ai-ins-btn:disabled{opacity:.5;cursor:not-allowed}
+.insight-list{display:flex;flex-direction:column;gap:7px}
+.insight-item{display:flex;gap:9px;align-items:flex-start;font-size:.77rem;color:var(--mu2);line-height:1.5}
+.ins-dot{width:5px;height:5px;border-radius:50%;margin-top:7px;flex-shrink:0}
+.ins-dot.g{background:var(--g1)}.ins-dot.b{background:var(--g2)}.ins-dot.gold{background:var(--gold)}.ins-dot.pu{background:var(--purple)}
+
+/* VISITORS */
+.visitors-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
+.vis-card{background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;transition:border .2s}
+.vis-card:hover{border-color:var(--bd2)}
+.vis-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:9px}
+.vis-name{font-size:.84rem;font-weight:600}
+.vis-anon{font-size:.75rem;color:var(--mu2);font-style:italic}
+.vis-phone{font-family:'JetBrains Mono',monospace;font-size:.69rem;color:var(--g1);margin-top:2px}
+.vis-visits{font-family:'JetBrains Mono',monospace;font-size:.61rem;padding:3px 8px;border-radius:20px;background:rgba(168,85,247,.1);color:var(--purple);border:1px solid rgba(168,85,247,.2)}
+.vis-timeline{margin-bottom:9px}
+.vis-trow{font-size:.67rem;color:var(--mu2);font-family:'JetBrains Mono',monospace;padding:3px 0;display:flex;justify-content:space-between;border-bottom:1px solid var(--bd)}
+.vis-trow:last-child{border-bottom:none}
+.vis-wa-btn{display:block;text-align:center;padding:6px;border-radius:7px;font-size:.69rem;font-weight:700;text-decoration:none;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;transition:opacity .2s;border:none;cursor:pointer;width:100%;font-family:'Space Grotesk',sans-serif}
+.vis-wa-btn:hover{opacity:.85}
+.vis-wa-dis{display:block;text-align:center;padding:6px;border-radius:7px;font-size:.69rem;color:var(--mu);border:1px solid var(--bd);font-family:'Space Grotesk',sans-serif}
+
+/* SETUP */
+.setup-step{background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:17px 21px;margin-bottom:13px}
+.setup-step h3{font-size:.86rem;font-weight:700;color:var(--g1);margin-bottom:8px}
+.setup-step p{font-size:.77rem;color:var(--mu2);margin-bottom:9px;line-height:1.6}
+.code-block{background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:11px 13px;font-family:'JetBrains Mono',monospace;font-size:.69rem;color:var(--g2);overflow-x:auto;line-height:1.8}
+.c-cm{color:var(--mu2)}.c-kw{color:var(--purple)}.c-str{color:var(--gold)}
+
+/* AI CHAT PANEL */
+.ai-chat-panel{position:fixed;right:0;top:0;bottom:0;width:370px;background:var(--s1);border-left:1px solid var(--bd);display:flex;flex-direction:column;z-index:300;transform:translateX(100%);transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+.ai-chat-panel.open{transform:translateX(0)}
+.acp-header{padding:15px 17px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:9px}
+.acp-icon{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--purple),var(--g1));display:flex;align-items:center;justify-content:center;font-size:.95rem}
+.acp-title{font-size:.88rem;font-weight:700}
+.acp-sub{font-size:.63rem;color:var(--mu2);font-family:'JetBrains Mono',monospace}
+.acp-close{margin-left:auto;background:none;border:none;color:var(--mu2);cursor:pointer;font-size:1.05rem;padding:4px;border-radius:6px;transition:all .18s}
+.acp-close:hover{color:var(--tx);background:var(--s2)}
+.acp-msgs{flex:1;overflow-y:auto;padding:13px;display:flex;flex-direction:column;gap:9px}
+.acp-msg{max-width:88%;animation:fadeUp .2s ease}
+.acp-msg.user{align-self:flex-end}.acp-msg.ai{align-self:flex-start}
+.acp-bubble{padding:9px 12px;border-radius:10px;font-size:.76rem;line-height:1.55}
+.acp-msg.user .acp-bubble{background:linear-gradient(135deg,rgba(0,255,135,.14),rgba(0,212,255,.09));border:1px solid rgba(0,255,135,.2);color:var(--tx);border-bottom-right-radius:3px}
+.acp-msg.ai .acp-bubble{background:var(--s2);border:1px solid var(--bd);color:var(--mu2);border-bottom-left-radius:3px;white-space:pre-wrap}
+.acp-typing-dots{display:flex;gap:4px;align-items:center;padding:2px 0}
+.acp-typing-dots span{width:6px;height:6px;border-radius:50%;background:var(--mu);animation:typing 1.2s infinite}
+.acp-typing-dots span:nth-child(2){animation-delay:.2s}.acp-typing-dots span:nth-child(3){animation-delay:.4s}
+@keyframes typing{0%,100%{transform:translateY(0);opacity:.4}50%{transform:translateY(-4px);opacity:1}}
+.acp-input-row{padding:11px 13px;border-top:1px solid var(--bd);display:flex;gap:7px}
+.acp-inp{flex:1;background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:8px 12px;color:var(--tx);font-size:.77rem;outline:none;font-family:'Space Grotesk',sans-serif;transition:border .2s;resize:none}
+.acp-inp:focus{border-color:rgba(168,85,247,.4)}
+.acp-send{background:linear-gradient(135deg,var(--purple),var(--g1));color:#000;border:none;border-radius:8px;width:34px;flex-shrink:0;cursor:pointer;font-size:.9rem;transition:all .2s;display:flex;align-items:center;justify-content:center;font-weight:700}
+.acp-send:hover{opacity:.88;transform:translateY(-1px)}
+.acp-send:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.acp-quick-btns{display:flex;gap:5px;flex-wrap:wrap;padding:8px 13px 0}
+.acp-quick{padding:4px 10px;border-radius:20px;font-size:.64rem;font-weight:600;cursor:pointer;border:1px solid rgba(168,85,247,.25);background:rgba(168,85,247,.08);color:var(--purple);font-family:'Space Grotesk',sans-serif;transition:all .18s;white-space:nowrap}
+.acp-quick:hover{background:rgba(168,85,247,.18)}
+
+/* POPUP */
+#wa-popup{position:fixed;bottom:78px;right:26px;background:var(--s1);border:1px solid rgba(37,211,102,.28);border-radius:14px;padding:15px 17px;opacity:0;pointer-events:none;transition:all .3s cubic-bezier(.34,1.56,.64,1);z-index:400;width:325px;box-shadow:0 10px 48px rgba(0,0,0,.6)}
+#wa-popup.show{opacity:1;pointer-events:all;transform:translateY(-4px)}
+#wa-popup .pp-title{font-weight:700;font-size:.86rem;color:var(--wa);margin-bottom:7px;display:flex;align-items:center;gap:5px}
+#wa-popup .pp-msg{font-size:.71rem;color:var(--mu2);line-height:1.65;font-family:'JetBrains Mono',monospace;margin-bottom:9px;max-height:95px;overflow-y:auto;white-space:pre-wrap}
+#wa-popup .pp-actions{display:flex;gap:6px}
+#wa-popup .pp-send{flex:1;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;border:none;border-radius:7px;padding:8px;font-size:.75rem;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif}
+#wa-popup .pp-dis{background:var(--s2);color:var(--mu2);border:1px solid var(--bd);border-radius:7px;padding:8px 11px;font-size:.75rem;cursor:pointer;font-family:'Space Grotesk',sans-serif}
+
+/* TOAST */
+#toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--s2);border:1px solid var(--bd2);color:var(--tx);border-radius:10px;padding:9px 17px;font-size:.77rem;font-weight:600;opacity:0;pointer-events:none;transition:all .28s;z-index:999;white-space:nowrap;box-shadow:0 8px 28px rgba(0,0,0,.5)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* FAB */
+.ai-fab{position:fixed;bottom:26px;right:26px;width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--g1));border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.15rem;box-shadow:0 4px 22px rgba(168,85,247,.4);transition:all .2s;z-index:350}
+.ai-fab:hover{transform:scale(1.09);box-shadow:0 6px 30px rgba(168,85,247,.55)}
+.fab-pulse{position:absolute;top:-2px;right:-2px;width:11px;height:11px;border-radius:50%;background:var(--g1);border:2px solid var(--bg);animation:beat 2s infinite}
+
+/* LEAD SCORE BADGE */
+.score-badge{display:inline-flex;align-items:center;gap:3px;font-family:'JetBrains Mono',monospace;font-size:.59rem;font-weight:700;padding:2px 7px;border-radius:20px;letter-spacing:.04em}
+.score-A{background:rgba(0,255,135,.12);color:var(--g1);border:1px solid rgba(0,255,135,.3)}
+.score-B{background:rgba(0,212,255,.12);color:var(--g2);border:1px solid rgba(0,212,255,.3)}
+.score-C{background:rgba(245,166,35,.12);color:var(--gold);border:1px solid rgba(245,166,35,.3)}
+.score-D{background:rgba(255,77,109,.12);color:var(--red);border:1px solid rgba(255,77,109,.3)}
+.hot-badge{background:rgba(255,77,109,.15);color:var(--red);border:1px solid rgba(255,77,109,.35);font-size:.57rem;font-weight:700;padding:2px 7px;border-radius:20px;font-family:'JetBrains Mono',monospace;animation:beat 1.5s infinite}
+
+/* PROPERTY TRACKING BOX */
+.pts-box{background:rgba(0,212,255,.04);border:1px solid rgba(0,212,255,.13);border-radius:10px;padding:12px 14px;margin-bottom:11px}
+.pts-box .sec-head{color:var(--g2)}
+.pts-row{display:flex;justify-content:space-between;align-items:center;font-size:.71rem;color:var(--mu2);padding:3px 0;border-bottom:1px solid var(--bd)}
+.pts-row:last-child{border-bottom:none}
+.pts-prop{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pts-meta{font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--mu);flex-shrink:0;margin-left:8px}
+
+/* SCORE DETAIL BOX */
+.score-box{background:linear-gradient(135deg,rgba(0,255,135,.04),rgba(0,212,255,.03));border:1px solid rgba(0,255,135,.13);border-radius:10px;padding:12px 14px;margin-bottom:11px}
+.score-row{display:flex;align-items:center;gap:6px;font-size:.71rem;padding:3px 0}
+.score-bar-sm{flex:1;height:4px;background:var(--s3);border-radius:2px;overflow:hidden}
+.score-bar-fill{height:100%;border-radius:2px;background:var(--g1);transition:width .4s}
+.score-pts{font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--g1);flex-shrink:0;width:36px;text-align:right}
+.score-total-row{display:flex;align-items:center;gap:10px;margin-bottom:9px;padding-bottom:9px;border-bottom:1px solid var(--bd)}
+.score-grade-big{font-family:'JetBrains Mono',monospace;font-size:2rem;font-weight:700;line-height:1}
+.score-total-num{font-family:'JetBrains Mono',monospace;font-size:1.1rem;font-weight:600;color:var(--mu2)}
+.score-label{font-size:.65rem;color:var(--mu);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.07em}
+
+/* OPERATOR / HUMAN TAKEOVER PANEL */
+.op-panel{background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;margin-bottom:14px}
+.op-panel-title{font-size:.62rem;color:var(--mu2);text-transform:uppercase;letter-spacing:.1em;font-family:'JetBrains Mono',monospace;margin-bottom:10px;font-weight:700;display:flex;align-items:center;gap:6px}
+.op-status-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+.op-status-btn{padding:4px 10px;border-radius:20px;font-size:.67rem;font-weight:600;cursor:pointer;border:1px solid var(--bd);background:var(--s2);color:var(--mu2);font-family:'Space Grotesk',sans-serif;transition:all .18s}
+.op-status-btn:hover{color:var(--tx)}
+.op-status-btn.active-online{background:rgba(0,255,135,.1);color:var(--g1);border-color:rgba(0,255,135,.3)}
+.op-status-btn.active-away{background:rgba(245,166,35,.1);color:var(--gold);border-color:rgba(245,166,35,.3)}
+.op-status-btn.active-busy{background:rgba(255,77,109,.1);color:var(--red);border-color:rgba(255,77,109,.3)}
+.op-status-btn.active-offline{background:rgba(74,85,104,.15);color:var(--mu2);border-color:var(--bd2)}
+.takeover-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.takeover-tog{width:40px;height:22px;background:var(--s3);border-radius:11px;border:1px solid var(--bd2);position:relative;cursor:pointer;transition:all .25s;flex-shrink:0}
+.takeover-tog.on{background:rgba(0,255,135,.2);border-color:var(--g1)}
+.takeover-knob{width:16px;height:16px;border-radius:50%;background:var(--mu);position:absolute;top:2px;left:2px;transition:all .25s}
+.takeover-tog.on .takeover-knob{left:20px;background:var(--g1);box-shadow:0 0 8px rgba(0,255,135,.5)}
+.takeover-lbl{font-size:.74rem;font-weight:600;color:var(--tx)}
+.takeover-sub{font-size:.63rem;color:var(--mu);font-family:'JetBrains Mono',monospace}
+.op-msg-row{display:flex;gap:6px}
+.op-msg-inp{flex:1;background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:6px 10px;color:var(--tx);font-size:.74rem;outline:none;font-family:'Space Grotesk',sans-serif;transition:border .2s}
+.op-msg-inp:focus{border-color:rgba(0,255,135,.3)}
+.op-msg-send{background:linear-gradient(135deg,var(--g1),var(--g2));color:#000;border:none;border-radius:7px;padding:6px 13px;font-size:.72rem;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:all .18s;white-space:nowrap}
+.op-msg-send:hover{opacity:.88}
+
+/* HOT LEADS SECTION */
+.hot-leads-bar{background:linear-gradient(135deg,rgba(255,77,109,.07),rgba(245,166,35,.04));border:1px solid rgba(255,77,109,.2);border-radius:12px;padding:10px 15px;margin-bottom:14px;display:none;align-items:center;gap:10px;flex-wrap:wrap}
+.hot-leads-bar.has-hot{display:flex}
+.hot-lbl{font-size:.67rem;font-weight:700;color:var(--red);font-family:'JetBrains Mono',monospace;white-space:nowrap}
+.hot-chips{display:flex;gap:5px;flex-wrap:wrap;flex:1}
+.hot-chip{padding:3px 9px;border-radius:20px;font-size:.63rem;font-weight:600;background:rgba(255,77,109,.1);color:var(--red);border:1px solid rgba(255,77,109,.25);cursor:pointer;font-family:'JetBrains Mono',monospace;transition:all .18s}
+.hot-chip:hover{background:rgba(255,77,109,.2)}
+
+/* NEWLAUNCH / FOREIGN keys */
+
+.empty-state{text-align:center;padding:58px 20px;color:var(--mu2)}
+.empty-icon{font-size:2.4rem;margin-bottom:11px;opacity:.3}
+.empty-text{font-size:.81rem;font-family:'JetBrains Mono',monospace}
+.empty-sub{font-size:.71rem;color:var(--mu);margin-top:6px}
+
+@media(max-width:1000px){.sb{display:none}.main{margin-left:0;padding:20px 14px}.stats-row{grid-template-columns:repeat(3,1fr)}.dp-grid{grid-template-columns:repeat(2,1fr)}.analytics-grid{grid-template-columns:1fr}.visitors-grid{grid-template-columns:1fr 1fr}.ai-chat-panel{width:100%;border-left:none;border-top:1px solid var(--bd)}.tpl-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<!-- SIDEBAR -->
+<aside class="sb">
+  <div class="logo-area">
+    <div class="logo-mark"><div class="lm-icon">✦</div><div class="lm-name">Merlin AI</div></div>
+    <div class="lm-sub">Rex Yap · Sabah Realty</div>
+  </div>
+  <nav class="nav-sec">
+    <div class="nav-lbl">工作台</div>
+    <button class="ni on" onclick="showV('leads')"><span class="ni-icon">📋</span><span class="i" data-k="nav_leads"></span><span class="ni-badge" id="nb-new">0</span></button>
+    <button class="ni" onclick="showV('analytics')"><span class="ni-icon">📊</span><span class="i" data-k="nav_stats"></span></button>
+    <button class="ni" onclick="showV('visitors')"><span class="ni-icon">👁</span><span class="i" data-k="nav_visitors"></span></button>
+    <div class="nav-lbl">工具</div>
+    <button class="ni" onclick="showV('setup')"><span class="ni-icon">⚙️</span><span class="i" data-k="nav_setup"></span></button>
+    <button class="ni" onclick="showV('operator')"><span class="ni-icon">🎛️</span>Rex 控制台</button>
+    <button class="ni" onclick="exportCSV()"><span class="ni-icon">📤</span><span class="i" data-k="nav_export"></span></button>
+    <button class="ni" onclick="clearAll()"><span class="ni-icon">🗑️</span><span class="i" data-k="nav_clear"></span></button>
+  </nav>
+  <div class="sb-footer">
+    <div class="live-ind"><span class="live-dot"></span><span class="i" data-k="footer_live"></span></div>
+    <div class="last-upd-txt" id="last-upd">--</div>
+  </div>
+</aside>
+
+<main class="main">
+
+<!-- ── LEADS VIEW ── -->
+<div id="v-leads" class="view on">
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="page-title"><span class="i" data-k="pt1"></span> <em><span class="i" data-k="pt2"></span></em></div>
+      <div class="page-sub i" data-k="pd"></div>
+    </div>
+    <div class="tb-right">
+      <div class="lang-sw">
+        <button class="lb on" onclick="setL('zh')">CN</button>
+        <button class="lb" onclick="setL('en')">EN</button>
+        <button class="lb" onclick="setL('ms')">BM</button>
+      </div>
+      <button class="btn btn-ghost" onclick="loadDemo()"><span class="i" data-k="btn_demo"></span></button>
+      <button class="btn btn-primary" onclick="refresh()">🔄 <span class="i" data-k="btn_refresh"></span></button>
+    </div>
+  </div>
+  <div class="wa-bar">
+    <span class="wa-lbl">💬 WhatsApp</span>
+    <input class="wa-input" id="wa-num" placeholder="60112529XXXX" oninput="saveWANum()">
+    <div class="tog-wrap" onclick="togAuto()">
+      <div class="tog-track" id="wa-tog"><div class="tog-knob"></div></div>
+      <span class="tog-lbl i" data-k="wa_tog"></span>
+    </div>
+    <span class="wa-status" id="wa-note"></span>
+  </div>
+  <div class="stats-row">
+    <div class="stat-card c-g"><div class="sc-label i" data-k="s_total"></div><div class="sc-num" id="s-total">0</div><div class="sc-sub i" data-k="s_total_n"></div></div>
+    <div class="stat-card c-b"><div class="sc-label i" data-k="s_buy"></div><div class="sc-num" id="s-buy">0</div><div class="sc-sub i" data-k="s_buy_n"></div></div>
+    <div class="stat-card c-gold"><div class="sc-label i" data-k="s_rent"></div><div class="sc-num" id="s-rent">0</div><div class="sc-sub i" data-k="s_rent_n"></div></div>
+    <div class="stat-card c-pu"><div class="sc-label i" data-k="s_anon"></div><div class="sc-num" id="s-anon">0</div><div class="sc-sub i" data-k="s_anon_n"></div></div>
+    <div class="stat-card c-r"><div class="sc-label i" data-k="s_return"></div><div class="sc-num" id="s-return">0</div><div class="sc-sub i" data-k="s_return_n"></div></div>
+    <div class="stat-card" style="border-color:rgba(255,77,109,.2)"><div class="sc-label" style="color:var(--red)">🔥 热门</div><div class="sc-num" id="s-hot" style="color:var(--red)">0</div><div class="sc-sub">A/B级线索</div></div>
+    <div class="stat-card" style="border-color:rgba(249,115,22,.2)"><div class="sc-label" style="color:#f97316">🏗️ 新楼盘</div><div class="sc-num" id="s-newlaunch" style="color:#f97316">0</div><div class="sc-sub">New Launch</div></div>
+    <div class="stat-card" style="border-color:rgba(6,182,212,.2)"><div class="sc-label" style="color:#06b6d4">🌏 海外</div><div class="sc-num" id="s-foreign" style="color:#06b6d4">0</div><div class="sc-sub">Foreign Buyer</div></div>
+  </div>
+  <div class="ai-bar">
+    <span style="font-size:1rem">🤖</span>
+    <span class="ai-lbl">MERLIN AI</span>
+    <span class="ai-desc i" data-k="ai_bar_desc"></span>
+    <button class="ai-btn" onclick="openAIChat()"><span class="i" data-k="ai_ask_btn"></span></button>
+  </div>
+  <div class="demo-bar" id="demo-bar">⚠️ <span class="i" data-k="demo_note"></span></div>
+  <!-- Hot Leads Alert Bar -->
+  <div class="hot-leads-bar" id="hot-leads-bar">
+    <span class="hot-lbl">🔥 热门线索</span>
+    <div class="hot-chips" id="hot-chips"></div>
+  </div>
+  <div class="filter-row">
+    <button class="fc on" onclick="setF('all',this)"><span class="i" data-k="f_all"></span></button>
+    <button class="fc r-buy" onclick="setF('buy',this)">🏠 <span class="i" data-k="f_buy"></span></button>
+    <button class="fc r-rent" onclick="setF('rent',this)">🔑 <span class="i" data-k="f_rent"></span></button>
+    <button class="fc r-mm2h" onclick="setF('mm2h',this)">📋 MM2H</button>
+    <button class="fc r-contact" onclick="setF('contact',this)">📞 <span class="i" data-k="f_contact"></span></button>
+    <button class="fc" onclick="setF('newlaunch',this)" style="--on-color:#f97316">🏗️ 新楼盘</button>
+    <button class="fc" onclick="setF('foreign',this)" style="--on-color:#06b6d4">🌏 海外</button>
+    <button class="fc r-anon" onclick="setF('anon',this)">👻 <span class="i" data-k="f_anon"></span></button>
+    <select id="sort-sel" class="sort-sel" onchange="render()">
+      <option value="newest"></option><option value="oldest"></option><option value="status"></option><option value="visits"></option>
+    </select>
+    <input class="search-inp" id="search" oninput="render()">
+  </div>
+  <div class="leads-list" id="lead-grid">
+    <div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text i" data-k="empty1"></div><div class="empty-sub i" data-k="empty2"></div></div>
+  </div>
+</div>
+
+<!-- ── OPERATOR / REX CONTROL VIEW ── -->
+<div id="v-operator" class="view">
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="page-title">🎛️ Rex <em>控制台</em></div>
+      <div class="page-sub">Human Takeover · Rex 在线状态 · 直接发消息给访客</div>
+    </div>
+    <div class="tb-right">
+      <button class="btn btn-primary" onclick="refreshOpPanel()">🔄 刷新</button>
+    </div>
+  </div>
+
+  <!-- Rex Status -->
+  <div class="op-panel">
+    <div class="op-panel-title">🟢 Rex 在线状态</div>
+    <div class="op-status-row" id="op-status-btns">
+      <button class="op-status-btn active-online" onclick="setOpStatus('online',this)">🟢 在线</button>
+      <button class="op-status-btn" onclick="setOpStatus('away',this)">🟡 暂离</button>
+      <button class="op-status-btn" onclick="setOpStatus('busy',this)">🔴 忙碌</button>
+      <button class="op-status-btn" onclick="setOpStatus('offline',this)">⚫ 离线</button>
+    </div>
+    <div style="font-size:.7rem;color:var(--mu);font-family:'JetBrains Mono',monospace" id="op-status-note">当前状态会显示在 Rex 聊天窗口里，让访客知道你是否在线。</div>
+  </div>
+
+  <!-- Human Takeover Global Toggle -->
+  <div class="op-panel">
+    <div class="op-panel-title">🤖 Rex AI 自动回复</div>
+    <div class="takeover-row">
+      <div class="takeover-tog on" id="global-rex-tog" onclick="togGlobalRex()">
+        <div class="takeover-knob"></div>
+      </div>
+      <div>
+        <div class="takeover-lbl" id="global-rex-lbl">Rex AI 已开启</div>
+        <div class="takeover-sub" id="global-rex-sub">Rex 正在自动回复所有访客问题</div>
+      </div>
+    </div>
+    <div style="font-size:.7rem;color:var(--mu);margin-top:4px">关闭后 Rex AI 停止自动回复，由您手动接管所有对话。</div>
+  </div>
+
+  <!-- Active Sessions / Takeover per lead -->
+  <div class="op-panel">
+    <div class="op-panel-title">💬 活跃访客 — 单独接管控制</div>
+    <div id="op-sessions-list" style="display:flex;flex-direction:column;gap:10px">
+      <div style="color:var(--mu);font-size:.75rem;text-align:center;padding:20px 0">暂无活跃访客 · 等待访客发起对话…</div>
+    </div>
+  </div>
+
+  <!-- Broadcast Message -->
+  <div class="op-panel">
+    <div class="op-panel-title">📢 广播消息</div>
+    <div style="font-size:.72rem;color:var(--mu);margin-bottom:8px">发送一条消息给所有当前活跃的访客。</div>
+    <div class="op-msg-row">
+      <input class="op-msg-inp" id="broadcast-msg" placeholder="输入广播消息…">
+      <button class="op-msg-send" onclick="sendBroadcast()">📢 广播</button>
+    </div>
+  </div>
+
+  <!-- Hot Leads Quick Action -->
+  <div class="op-panel">
+    <div class="op-panel-title">🔥 高分线索快速跟进</div>
+    <div id="op-hot-leads-list" style="display:flex;flex-direction:column;gap:8px">
+      <div style="color:var(--mu);font-size:.75rem;text-align:center;padding:20px 0">计算中…</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── ANALYTICS VIEW ── -->
+<div id="v-analytics" class="view">
+  <div class="topbar">
+    <div class="tb-left"><div class="page-title"><span class="i" data-k="nav_stats"></span></div><div class="page-sub i" data-k="stats_desc"></div></div>
+    <div class="tb-right"><button class="btn btn-ghost" onclick="genInsights()" id="insights-top-btn">✨ <span class="i" data-k="ai_insights_btn"></span></button></div>
+  </div>
+  <div class="ai-insights">
+    <div class="ai-ins-head">
+      <div class="ai-ins-icon">✨</div>
+      <div class="ai-ins-title i" data-k="ai_insights_title"></div>
+      <button class="ai-ins-btn" onclick="genInsights()" id="insights-gen-btn">🔮 <span class="i" data-k="ai_gen"></span></button>
+    </div>
+    <div class="insight-list" id="insight-list">
+      <div class="insight-item"><div class="ins-dot pu"></div><span class="i" data-k="ai_insight_placeholder"></span></div>
+    </div>
+  </div>
+  <div class="analytics-grid" id="analytics-content"></div>
+</div>
+
+<!-- ── VISITORS VIEW ── -->
+<div id="v-visitors" class="view">
+  <div class="topbar">
+    <div class="tb-left"><div class="page-title"><span class="i" data-k="nav_visitors"></span></div><div class="page-sub i" data-k="visitors_desc"></div></div>
+  </div>
+  <div class="visitors-grid" id="visitors-content"></div>
+</div>
+
+<!-- ── SETUP VIEW ── -->
+<div id="v-setup" class="view">
+  <div class="topbar"><div class="tb-left"><div class="page-title"><span class="i" data-k="nav_setup"></span></div><div class="page-sub i" data-k="setup_desc"></div></div></div>
+  <div class="setup-step">
+    <h3>🔌 <span class="i" data-k="s1_t"></span></h3>
+    <p class="i" data-k="s1_d"></p>
+    <div class="code-block">
+<span class="c-cm">// ① index.html &lt;script&gt; 顶部加入访客指纹函数</span><br>
+<span class="c-kw">function</span> getVisitorId() {<br>
+&nbsp;&nbsp;<span class="c-kw">var</span> vid = localStorage.getItem(<span class="c-str">'merlin_visitor_id'</span>);<br>
+&nbsp;&nbsp;<span class="c-kw">if</span> (!vid) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;vid = [navigator.language, screen.width+<span class="c-str">'x'</span>+screen.height,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;new Date().getTimezoneOffset(), navigator.hardwareConcurrency||0<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;].join(<span class="c-str">'|'</span>) + <span class="c-str">'_'</span> + Date.now().toString(36);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;localStorage.setItem(<span class="c-str">'merlin_visitor_id'</span>, vid);<br>
+&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;<span class="c-kw">return</span> vid;<br>
+}
+    </div>
+  </div>
+  <div class="setup-step">
+    <h3>📝 <span class="i" data-k="s2_t"></span></h3>
+    <p class="i" data-k="s2_d"></p>
+    <div class="code-block">
+<span class="c-cm">// ② saveLead() 函数内，leads.push({...}) 之后加入</span><br>
+<span class="c-kw">try</span> {<br>
+&nbsp;&nbsp;<span class="c-kw">var</span> vid = getVisitorId();<br>
+&nbsp;&nbsp;<span class="c-kw">var</span> ex = JSON.parse(localStorage.getItem(<span class="c-str">'merlin_crm_leads'</span>)||<span class="c-str">'[]'</span>);<br>
+&nbsp;&nbsp;ex.push({ id:<span class="c-str">'sess_'</span>+_sessionId+<span class="c-str">'_'</span>+Date.now(),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;sessionId:_sessionId, visitorId:vid,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;time:<span class="c-kw">new</span> Date().toISOString(), msg:msg,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;flow:flowState?flowState.key:<span class="c-str">'chat'</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;answers:flowState?flowState.answers.slice():[], lang:getLang(), status:<span class="c-str">'new'</span> });<br>
+&nbsp;&nbsp;localStorage.setItem(<span class="c-str">'merlin_crm_leads'</span>, JSON.stringify(ex));<br>
+} <span class="c-kw">catch</span>(e) {}
+    </div>
+  </div>
+  <div class="setup-step">
+    <h3>✅ <span class="i" data-k="s3_t"></span></h3>
+    <p class="i" data-k="s3_d"></p>
+    <div class="code-block">
+<span class="c-cm">// ③ notifyRexOnFlowComplete() — _flowCompleted=true 之后</span><br>
+<span class="c-kw">try</span> {<br>
+&nbsp;&nbsp;<span class="c-kw">var</span> crm = JSON.parse(localStorage.getItem(<span class="c-str">'merlin_crm_leads'</span>)||<span class="c-str">'[]'</span>);<br>
+&nbsp;&nbsp;<span class="c-kw">var</span> last = crm.filter(<span class="c-kw">function</span>(l){<span class="c-kw">return</span> l.sessionId===_sessionId;});<br>
+&nbsp;&nbsp;<span class="c-kw">if</span>(last.length){<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="c-kw">var</span> r=last[last.length-1];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;r.customerName=customerName||<span class="c-str">''</span>; r.customerPhone=customerPhone||<span class="c-str">''</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;r.flowCompleted=<span class="c-kw">true</span>; r.answers=answers.slice(); r.flow=flowKey;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;r.visitorId=getVisitorId();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;localStorage.setItem(<span class="c-str">'merlin_crm_leads'</span>,JSON.stringify(crm));<br>
+&nbsp;&nbsp;}<br>
+} <span class="c-kw">catch</span>(e) {}
+    </div>
+  </div>
+  <div class="setup-step">
+    <h3>🤖 AI 功能说明</h3>
+    <p>此后台的「AI 分析」、「智能回复生成」和「AI 助手聊天」均由 Anthropic Claude API 驱动，已预先配置，无需额外设置。</p>
+    <p style="color:var(--g1);font-size:.76rem;margin-top:4px">✦ AI 功能：顾客摘要分析 · 个性化 WA 回复生成 · 数据洞察 · AI 聊天助手</p>
+  </div>
+  <div class="setup-step">
+    <h3>📂 <span class="i" data-k="s4_t"></span></h3>
+    <p class="i" data-k="s4_d"></p>
+    <div class="code-block">
+your-github-repo/<br>
+├── index.html &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="c-cm">← 顾客聊天界面</span><br>
+├── merlin-admin.html &nbsp;&nbsp;<span class="c-cm">← 此后台（2026 AI版）</span><br>
+├── listingsData.js &nbsp;&nbsp;&nbsp;<span class="c-cm">← 房源数据</span><br>
+└── images/ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="c-cm">← 房源图片</span>
+    </div>
+    <p style="color:var(--g1);font-size:.75rem;margin-top:8px" class="i" data-k="s4_note"></p>
+  </div>
+</div>
+
+</main>
+
+<!-- AI CHAT PANEL -->
+<div class="ai-chat-panel" id="ai-chat-panel">
+  <div class="acp-header">
+    <div class="acp-icon">🤖</div>
+    <div><div class="acp-title">Merlin AI 助手</div><div class="acp-sub">由 Claude 驱动 · 专属 Rex Yap</div></div>
+    <button class="acp-close" onclick="closeAIChat()">✕</button>
+  </div>
+  <div class="acp-quick-btns">
+    <button class="acp-quick" onclick="setAIQ('分析今天的顾客数据')">📊 分析数据</button>
+    <button class="acp-quick" onclick="setAIQ('哪些顾客最值得优先跟进？')">🎯 优先顾客</button>
+    <button class="acp-quick" onclick="setAIQ('帮我写一个买房顾客的跟进策略')">📝 跟进策略</button>
+    <button class="acp-quick" onclick="setAIQ('分析匿名访客的特征')">👻 匿名分析</button>
+  </div>
+  <div class="acp-msgs" id="acp-msgs">
+    <div class="acp-msg ai"><div class="acp-bubble">您好 Rex！👋 我是 Merlin AI，由 Claude 驱动。
+
+我可以帮您：
+• 📊 分析顾客询问趋势与数据
+• 💬 生成个性化 WhatsApp 回复
+• 🎯 识别高价值潜在顾客
+• 📝 制定顾客跟进策略
+• 🔍 回答关于顾客数据的任何问题
+
+有什么可以帮您？</div></div>
+  </div>
+  <div class="acp-input-row">
+    <textarea class="acp-inp" id="acp-inp" placeholder="问我任何关于顾客的问题…" rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAIMsg()}"></textarea>
+    <button class="acp-send" onclick="sendAIMsg()" id="acp-send-btn">➤</button>
+  </div>
+</div>
+
+<!-- FAB -->
+<button class="ai-fab" onclick="openAIChat()" title="AI 助手"><span>🤖</span><span class="fab-pulse"></span></button>
+
+<!-- POPUP -->
+<div id="wa-popup">
+  <div class="pp-title">🔔 <span class="i" data-k="pp_title"></span></div>
+  <div class="pp-msg" id="pp-msg"></div>
+  <div class="pp-actions">
+    <button class="pp-send" onclick="sendPopup()">💬 <span class="i" data-k="pp_send"></span></button>
+    <button class="pp-dis" onclick="disPopup()"><span class="i" data-k="pp_dis"></span></button>
+  </div>
+</div>
+<div id="toast"></div>
+<script>
+// ═══════════════════════════════════════════════════════
+// TRANSLATIONS
+// ═══════════════════════════════════════════════════════
+var TR={zh:{
+  nav_leads:'顾客询问',nav_stats:'数据分析',nav_visitors:'访客追踪',nav_setup:'安装指南',nav_export:'导出 CSV',nav_clear:'清空',
+  footer_live:'实时监听中',
+  pt1:'顾客',pt2:'询问台',pd:'由 Merlin AI 助手收集 · Claude AI 全面驱动',
+  btn_demo:'载入示范',btn_refresh:'刷新',
+  wa_tog:'自动提醒',wa_off:'⚠️ 请输入号码',wa_ready:'✅ 号码已保存',wa_on:'✅ 自动提醒已开启',
+  s_total:'总询问',s_total_n:'所有来源',s_buy:'买房询问',s_buy_n:'购买意向',
+  s_rent:'出租询问',s_rent_n:'租房意向',s_anon:'匿名访客',s_anon_n:'未留联系方式',
+  s_return:'回访顾客',s_return_n:'多次询问',
+  ai_bar_desc:'AI 智能分析 · 自动生成回复 · 顾客洞察 · 访客追踪',
+  ai_ask_btn:'💬 问 AI 助手',
+  demo_note:'当前为示范数据，实际数据来自 Merlin 对话',
+  f_all:'全部',f_buy:'买房',f_rent:'出租',f_contact:'联系',f_anon:'👻 匿名',
+  empty1:'暂无询问数据',empty2:'请按安装指南连接，或载入示范数据预览',
+  stats_desc:'AI 驱动的顾客数据分析',setup_desc:'将后台与 index.html 连接',
+  visitors_desc:'追踪所有访客，包括匿名顾客',
+  ai_insights_title:'AI 智能洞察',ai_insights_btn:'生成 AI 洞察',
+  ai_insight_placeholder:'点击「生成」，AI 将分析您的顾客数据并提供专业建议。',ai_gen:'生成',
+  s1_t:'第一步：加入访客指纹识别',s1_d:'在 index.html 的 script 标签内顶部加入，让系统识别回访顾客：',
+  s2_t:'第二步：在 saveLead() 中加入 visitorId',s2_d:'找到 saveLead 函数（约第1196行），在 leads.push({...}) 之后加入：',
+  s3_t:'第三步：在 notifyRexOnFlowComplete() 中保存联系资料',s3_d:'找到 notifyRexOnFlowComplete（约第1292行），_flowCompleted=true 之后加入：',
+  s4_t:'第四步：上传到 GitHub',s4_d:'确保两个文件在同一文件夹：',
+  s4_note:'✅ index.html 与 merlin-admin.html 共享同一域名的 localStorage，数据自动互通。',
+  pp_title:'新顾客询问！',pp_send:'发送 WA',pp_dis:'稍后',
+  st_new:'🟢 新询问',st_contacted:'🔵 已联系',st_closed:'✅ 已成交',
+  t_buy:'买房',t_rent:'出租',t_mm2h:'MM2H',t_contact:'联系',t_chat:'对话',t_newlaunch:'新楼盘',t_foreign:'海外买家',
+  rent_keys:['类型','房间数','厕所数','月租预算','区域','用途'],
+  buy_keys:['类型','房产类型','房间数','厕所数','购买预算','用途','区域'],
+  lbl_inquiry:'询问内容',lbl_name:'顾客姓名',lbl_phone:'联系电话',lbl_q:'Q',
+  lbl_vid:'访客指纹',lbl_visits:'来访次数',
+  dh:'询问详情',wa_prev_lbl:'WA 消息预览',copy_btn:'复制',
+  wa_send_self:'📤 发给自己',wa_send_cust:'💬 发给顾客',
+  note_ph:'✏️ 备注（内部笔记）…',
+  wa_prefix:'您好 Rex！🏡 Merlin 新顾客询问',
+  wt_buy:'买房',wt_rent:'出租',wt_mm2h:'MM2H签证',wt_other:'房产',
+  del_c:'确定删除？',del_t:'🗑️ 已删除',clr_c:'确定清空所有数据？',clr_t:'🗑️ 已清空',
+  ref_t:'🔄 已刷新',exp_t:'📤 已导出',no_data:'无数据',no_match:'无符合条件的询问',new_t:'🔔 新询问！',
+  csv_h:['ID','时间','类型','姓名','电话','访客ID','来访次数','语言','摘要','状态','备注','AI摘要'],
+  sb_type:'询问类型',sb_status:'跟进状态',sb_lang:'语言分布',sb_anon:'身份分析',
+  sb_buy:'买房',sb_rent:'出租',sb_mm2h:'MM2H',sb_other:'其他',
+  sb_new:'🟢 新询问',sb_cont:'🔵 已联系',sb_closed:'✅ 已成交',
+  sb_identified:'✅ 已识别',sb_anon_l:'👻 匿名',
+  tn:'刚刚',tm:'分钟前',th:'小时前',sp:'🔍 搜索姓名、电话、指纹…',
+  vh_title:'此访客历史',lbl_edit_phone:'手动添加电话',lbl_save:'保存',
+  anon_lbl:'匿名',visit_lbl:'次访问',curr_lbl:'当前',
+  tpl_title:'快捷回复模板',tpl_buy:'买房跟进',tpl_rent:'出租跟进',tpl_mm2h:'MM2H跟进',tpl_anon:'邀请匿名顾客',
+  ai_reply_title:'AI 智能回复生成器',
+  tone_pro:'专业',tone_warm:'温暖亲切',tone_urgent:'紧迫',tone_casual:'轻松随意',
+  ai_gen_btn:'✨ 生成回复',ai_send_wa:'📲 发给顾客',ai_generating:'AI 生成中…',
+  sort_new:'最新优先',sort_old:'最旧优先',sort_st:'按状态',sort_vis:'按来访次数',
+  dp_overview:'概览',dp_ai:'AI 回复',dp_templates:'快捷模板',dp_wa:'发送 WA',
+  no_phone:'未留电话',lbl_edit_phone2:'添加电话'
+},en:{
+  nav_leads:'Enquiries',nav_stats:'Analytics',nav_visitors:'Visitor Tracking',nav_setup:'Setup Guide',nav_export:'Export CSV',nav_clear:'Clear',
+  footer_live:'Live monitoring',pt1:'Customer',pt2:'Enquiries',pd:'Collected by Merlin AI · Fully powered by Claude AI',
+  btn_demo:'Load Demo',btn_refresh:'Refresh',
+  wa_tog:'Auto Notify',wa_off:'⚠️ Enter number',wa_ready:'✅ Number saved',wa_on:'✅ Auto-notify active',
+  s_total:'Total Leads',s_total_n:'All sources',s_buy:'Buy Enquiries',s_buy_n:'Purchase intent',
+  s_rent:'Rent Enquiries',s_rent_n:'Rental intent',s_anon:'Anonymous',s_anon_n:'No contact info',
+  s_return:'Returning',s_return_n:'Multiple visits',
+  ai_bar_desc:'AI analysis · Smart reply generation · Customer insights · Visitor tracking',
+  ai_ask_btn:'💬 Ask AI',
+  demo_note:'Showing demo data — real data appears after Merlin conversations',
+  f_all:'All',f_buy:'Buy',f_rent:'Rent',f_contact:'Contact',f_anon:'👻 Anonymous',
+  empty1:'No enquiries yet',empty2:'Follow Setup Guide or load demo data',
+  stats_desc:'AI-powered customer data analytics',setup_desc:'Connect admin to your index.html',
+  visitors_desc:'Track all visitors including anonymous ones',
+  ai_insights_title:'AI Insights',ai_insights_btn:'Generate AI Insights',
+  ai_insight_placeholder:'Click "Generate" — AI will analyse your customer data and provide expert recommendations.',ai_gen:'Generate',
+  s1_t:'Step 1: Add Visitor Fingerprint',s1_d:'Add this inside index.html script tag, near the top:',
+  s2_t:'Step 2: Add visitorId in saveLead()',s2_d:'Find saveLead (~line 1196), add after leads.push({...}):',
+  s3_t:'Step 3: Save contact in notifyRexOnFlowComplete()',s3_d:'Find notifyRexOnFlowComplete (~line 1292). After _flowCompleted=true, add:',
+  s4_t:'Step 4: Upload to GitHub',s4_d:'Both files must be in the same folder:',
+  s4_note:'✅ index.html and merlin-admin.html share the same localStorage (same domain), data flows automatically.',
+  pp_title:'New Lead!',pp_send:'Send WA',pp_dis:'Later',
+  st_new:'🟢 New',st_contacted:'🔵 Contacted',st_closed:'✅ Closed',
+  t_buy:'Buy',t_rent:'Rent',t_mm2h:'MM2H',t_contact:'Contact',t_chat:'Chat',t_newlaunch:'New Launch',t_foreign:'Foreign Buyer',
+  rent_keys:['Type','Bedrooms','Bathrooms','Monthly Budget','Area','Purpose'],
+  buy_keys:['Type','Property Type','Bedrooms','Bathrooms','Budget','Purpose','Area'],
+  lbl_inquiry:'Enquiry',lbl_name:'Customer Name',lbl_phone:'Phone',lbl_q:'Q',
+  lbl_vid:'Visitor ID',lbl_visits:'Visit Count',
+  dh:'Enquiry Details',wa_prev_lbl:'WA Message Preview',copy_btn:'Copy',
+  wa_send_self:'📤 Send to Myself',wa_send_cust:'💬 Send to Customer',
+  note_ph:'✏️ Notes (internal only)…',
+  wa_prefix:'Hi Rex! 🏡 New Merlin enquiry',
+  wt_buy:'property purchase',wt_rent:'rental',wt_mm2h:'MM2H visa',wt_other:'property',
+  del_c:'Delete this?',del_t:'🗑️ Deleted',clr_c:'Clear ALL data?',clr_t:'🗑️ Cleared',
+  ref_t:'🔄 Refreshed',exp_t:'📤 Exported',no_data:'No data',no_match:'No matches',new_t:'🔔 New lead!',
+  csv_h:['ID','Time','Type','Name','Phone','Visitor ID','Visits','Language','Summary','Status','Notes','AI Summary'],
+  sb_type:'Enquiry Type',sb_status:'Follow-up Status',sb_lang:'Language',sb_anon:'Identity',
+  sb_buy:'Buy',sb_rent:'Rent',sb_mm2h:'MM2H',sb_other:'Other',
+  sb_new:'🟢 New',sb_cont:'🔵 Contacted',sb_closed:'✅ Closed',sb_identified:'✅ Identified',sb_anon_l:'👻 Anonymous',
+  tn:'just now',tm:'m ago',th:'h ago',sp:'🔍 Search name, phone, visitor ID…',
+  vh_title:"Visitor's History",lbl_edit_phone:'Add phone manually',lbl_save:'Save',
+  anon_lbl:'Anonymous',visit_lbl:'visits',curr_lbl:'current',
+  tpl_title:'Quick Templates',tpl_buy:'Buy Follow-up',tpl_rent:'Rent Follow-up',tpl_mm2h:'MM2H Follow-up',tpl_anon:'Invite Anonymous',
+  ai_reply_title:'AI Reply Generator',
+  tone_pro:'Professional',tone_warm:'Warm & Friendly',tone_urgent:'Urgent',tone_casual:'Casual',
+  ai_gen_btn:'✨ Generate Reply',ai_send_wa:'📲 Send to Customer',ai_generating:'AI generating…',
+  sort_new:'Newest first',sort_old:'Oldest first',sort_st:'By status',sort_vis:'By visits',
+  dp_overview:'Overview',dp_ai:'AI Reply',dp_templates:'Templates',dp_wa:'Send WA',
+  no_phone:'No phone',lbl_edit_phone2:'Add Phone'
+},ms:{
+  nav_leads:'Pertanyaan',nav_stats:'Analitik',nav_visitors:'Jejak Pelawat',nav_setup:'Panduan',nav_export:'Eksport CSV',nav_clear:'Kosongkan',
+  footer_live:'Pemantauan langsung',pt1:'Pertanyaan',pt2:'Pelanggan',pd:'Dikumpul oleh Merlin AI · Dikuasakan sepenuhnya oleh Claude AI',
+  btn_demo:'Muat Demo',btn_refresh:'Muat Semula',
+  wa_tog:'Notis Auto',wa_off:'⚠️ Masukkan nombor',wa_ready:'✅ Nombor disimpan',wa_on:'✅ Notis auto aktif',
+  s_total:'Jumlah',s_total_n:'Semua sumber',s_buy:'Pertanyaan Beli',s_buy_n:'Niat membeli',
+  s_rent:'Pertanyaan Sewa',s_rent_n:'Niat menyewa',s_anon:'Tanpa Nama',s_anon_n:'Tiada maklumat',
+  s_return:'Pelawat Kembali',s_return_n:'Lawatan berganda',
+  ai_bar_desc:'Analisis AI · Jana balasan pintar · Wawasan pelanggan · Jejak pelawat',
+  ai_ask_btn:'💬 Tanya AI',
+  demo_note:'Menunjukkan data demo — data sebenar muncul selepas perbualan Merlin',
+  f_all:'Semua',f_buy:'Beli',f_rent:'Sewa',f_contact:'Hubungi',f_anon:'👻 Tanpa Nama',
+  empty1:'Tiada pertanyaan lagi',empty2:'Ikuti panduan atau muat data demo',
+  stats_desc:'Analitik data pelanggan AI',setup_desc:'Hubungkan admin ke index.html',
+  visitors_desc:'Jejaki semua pelawat termasuk yang tanpa nama',
+  ai_insights_title:'Wawasan AI',ai_insights_btn:'Jana Wawasan AI',
+  ai_insight_placeholder:'Klik Jana — AI akan analisis data pelanggan anda.',ai_gen:'Jana',
+  s1_t:'Langkah 1: Tambah Cap Jari Pelawat',s1_d:'Tambah dalam script index.html, bahagian atas:',
+  s2_t:'Langkah 2: Tambah visitorId dalam saveLead()',s2_d:'Cari saveLead (~baris 1196), tambah selepas leads.push({...}):',
+  s3_t:'Langkah 3: Simpan maklumat dalam notifyRexOnFlowComplete()',s3_d:'Cari notifyRexOnFlowComplete (~baris 1292). Selepas _flowCompleted=true:',
+  s4_t:'Langkah 4: Muat Naik GitHub',s4_d:'Pastikan kedua-dua fail dalam folder yang sama:',
+  s4_note:'✅ index.html dan merlin-admin.html berkongsi localStorage yang sama, data mengalir secara automatik.',
+  pp_title:'Pertanyaan Baru!',pp_send:'Hantar WA',pp_dis:'Nanti',
+  st_new:'🟢 Baru',st_contacted:'🔵 Dihubungi',st_closed:'✅ Selesai',
+  t_buy:'Beli',t_rent:'Sewa',t_mm2h:'MM2H',t_contact:'Hubungi',t_chat:'Sembang',t_newlaunch:'Projek Baru',t_foreign:'Pembeli Asing',
+  rent_keys:['Jenis','Bilik Tidur','Bilik Air','Bajet','Kawasan','Tujuan'],
+  buy_keys:['Jenis','Jenis Hartanah','Bilik Tidur','Bilik Air','Bajet','Tujuan','Kawasan'],
+  lbl_inquiry:'Pertanyaan',lbl_name:'Nama',lbl_phone:'Telefon',lbl_q:'S',
+  lbl_vid:'ID Pelawat',lbl_visits:'Bilangan Lawatan',
+  dh:'Butiran Pertanyaan',wa_prev_lbl:'Pratonton Mesej WA',copy_btn:'Salin',
+  wa_send_self:'📤 Hantar Saya',wa_send_cust:'💬 Hantar Pelanggan',
+  note_ph:'✏️ Nota dalaman…',
+  wa_prefix:'Hai Rex! 🏡 Pertanyaan Merlin baharu',
+  wt_buy:'pembelian',wt_rent:'sewaan',wt_mm2h:'visa MM2H',wt_other:'hartanah',
+  del_c:'Padam ini?',del_t:'🗑️ Dipadam',clr_c:'Kosongkan semua data?',clr_t:'🗑️ Dikosongkan',
+  ref_t:'🔄 Dimuat semula',exp_t:'📤 Dieksport',no_data:'Tiada data',no_match:'Tiada padanan',new_t:'🔔 Pertanyaan baru!',
+  csv_h:['ID','Masa','Jenis','Nama','Telefon','ID Pelawat','Lawatan','Bahasa','Ringkasan','Status','Nota','Ringkasan AI'],
+  sb_type:'Jenis Pertanyaan',sb_status:'Status Susulan',sb_lang:'Bahasa',sb_anon:'Identiti',
+  sb_buy:'Beli',sb_rent:'Sewa',sb_mm2h:'MM2H',sb_other:'Lain',
+  sb_new:'🟢 Baru',sb_cont:'🔵 Dihubungi',sb_closed:'✅ Selesai',sb_identified:'✅ Dikenal Pasti',sb_anon_l:'👻 Tanpa Nama',
+  tn:'baru sahaja',tm:'min lalu',th:'jam lalu',sp:'🔍 Cari nama, telefon, ID pelawat…',
+  vh_title:'Sejarah Pelawat',lbl_edit_phone:'Tambah telefon manual',lbl_save:'Simpan',
+  anon_lbl:'Tanpa Nama',visit_lbl:'lawatan',curr_lbl:'semasa',
+  tpl_title:'Templat Pantas',tpl_buy:'Susulan Beli',tpl_rent:'Susulan Sewa',tpl_mm2h:'Susulan MM2H',tpl_anon:'Jemput Tanpa Nama',
+  ai_reply_title:'Jana Balasan AI',
+  tone_pro:'Profesional',tone_warm:'Mesra',tone_urgent:'Segera',tone_casual:'Santai',
+  ai_gen_btn:'✨ Jana Balasan',ai_send_wa:'📲 Hantar Pelanggan',ai_generating:'AI sedang jana…',
+  sort_new:'Terbaru dahulu',sort_old:'Terlama dahulu',sort_st:'Ikut status',sort_vis:'Ikut lawatan',
+  dp_overview:'Gambaran',dp_ai:'Balasan AI',dp_templates:'Templat',dp_wa:'Hantar WA',
+  no_phone:'Tiada telefon',lbl_edit_phone2:'Tambah Telefon'
+}};
+
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+function detectLang(){var b=(navigator.language||'zh').toLowerCase();if(b.startsWith('zh'))return'zh';if(b.startsWith('ms')||b==='id')return'ms';return'en';}
+var lang=localStorage.getItem('merlin_lang')||detectLang();
+var waAuto=localStorage.getItem('merlin_wa_auto')==='true';
+var leads=[],notes={},aiSummaries={},aiReplies={},filter='all',openId=null,openTab={},pendingLead=null,aiTone='warm';
+
+// ═══════════════════════════════════════════════════════
+// i18n
+// ═══════════════════════════════════════════════════════
+function t(k){return(TR[lang]&&TR[lang][k]!==undefined?TR[lang][k]:(TR.zh[k]||k));}
+function applyLang(){
+  document.querySelectorAll('.i[data-k]').forEach(function(el){el.innerHTML=t(el.getAttribute('data-k'));});
+  var so=document.getElementById('sort-sel');
+  if(so){so.options[0].text=t('sort_new');so.options[1].text=t('sort_old');so.options[2].text=t('sort_st');so.options[3].text=t('sort_vis');}
+  var si=document.getElementById('search');if(si)si.placeholder=t('sp');
+  updateWANote();
+}
+function setL(l){lang=l;localStorage.setItem('merlin_lang',l);document.querySelectorAll('.lb').forEach(function(b,i){b.classList.toggle('on',['zh','en','ms'][i]===l);});applyLang();render();}
+
+// ═══════════════════════════════════════════════════════
+// VISITOR HELPERS
+// ═══════════════════════════════════════════════════════
+function buildVisitorMap(){var m={};leads.forEach(function(l){if(l.visitorId){if(!m[l.visitorId])m[l.visitorId]=[];m[l.visitorId].push(l);}});return m;}
+function getVisitCount(lead){if(!lead.visitorId)return 1;return(buildVisitorMap()[lead.visitorId]||[]).length;}
+function isAnon(lead){return!(lead.customerName||lead.name||lead.customerPhone||lead.phone);}
+
+// ═══════════════════════════════════════════════════════
+// WA HELPERS
+// ═══════════════════════════════════════════════════════
+function saveWANum(){localStorage.setItem('merlin_wa_num',(document.getElementById('wa-num').value||'').trim());updateWANote();}
+function togAuto(){waAuto=!waAuto;localStorage.setItem('merlin_wa_auto',waAuto);document.getElementById('wa-tog').classList.toggle('on',waAuto);updateWANote();}
+function updateWANote(){
+  var num=(document.getElementById('wa-num')?document.getElementById('wa-num').value||'':'').trim();
+  var el=document.getElementById('wa-note');if(!el)return;
+  if(!num){el.textContent=t('wa_off');el.style.color='var(--gold)';}
+  else if(waAuto){el.textContent=t('wa_on');el.style.color='var(--g1)';}
+  else{el.textContent=t('wa_ready');el.style.color='var(--mu2)';}
+}
+function getWANum(){return(localStorage.getItem('merlin_wa_num')||'').replace(/\D/g,'')||'60112529883';}
+
+function buildWAMsg(lead,phone){
+  var typeStr={buy:t('wt_buy'),rent:t('wt_rent'),mm2h:t('wt_mm2h')}[lead.flow]||t('wt_other');
+  var lmap={zh:'CN',en:'English',ms:'Bahasa Melayu'};
+  var keys=lead.flow==='rent'?t('rent_keys'):(lead.flow==='buy'?t('buy_keys'):[]);
+  var dn=lead.customerName||lead.name||'';
+  var dp=phone||lead.customerPhone||lead.phone||'';
+  var vc=getVisitCount(lead);
+  var lines=[t('wa_prefix'),'━━━━━━━━━━━',
+    '📌 #'+String(lead.id||lead.sessionId||'').slice(-7)+(dn?' · '+dn:''),
+    '🕐 '+new Date(safeTime(lead.time)||Date.now()).toLocaleString(),
+    '🏷 '+typeStr+(lead.lang?' ('+(lmap[lead.lang]||lead.lang)+')':'')];
+  if(vc>1)lines.push('🔄 回访顾客 ×'+vc);
+  lines.push('━━━━━━━━━━━');
+  if(dp)lines.push('📞 '+dp);else lines.push('📞 （未留电话）');
+  if(lead.answers&&lead.answers.length){lead.answers.forEach(function(a,i){var lbl=(Array.isArray(keys)&&keys[i])?keys[i]:(t('lbl_q')+(i+1));lines.push(lbl+': '+a.replace(/^[^\s]+\s/,''));});}
+  else if(lead.msg)lines.push(t('lbl_inquiry')+': '+lead.msg);
+  if(lead.visitorId)lines.push('🔍 ID: …'+lead.visitorId.slice(-12));
+  if(aiSummaries[lead.id])lines.push('🤖 '+aiSummaries[lead.id]);
+  lines.push('━━━━━━━━━━━','— Merlin AI CRM · Rex Yap Sabah Realty');
+  return lines.join('\n');
+}
+
+function getTpl(lead,type){
+  var dn=lead.customerName||lead.name||'';
+  var fn=dn?dn.split(' ')[0]:(lang==='zh'?'您':'there');
+  var m={
+    buy:{title:t('tpl_buy'),msg:lang==='zh'?'您好'+fn+'！我是 Rex，看到您正在考虑购买房产。😊\n\n我精选了几个非常符合您需求的房源，方便我发给您看看吗？':lang==='ms'?'Hai '+fn+'! Saya Rex dari Sabah Realty. Saya lihat anda berminat untuk membeli hartanah. 😊\n\nSaya ada beberapa pilihan yang sesuai — boleh saya kongsikan?':'Hi '+fn+'! I\'m Rex from Sabah Realty. I saw your property purchase enquiry. 😊\n\nI\'ve shortlisted some great options — mind if I share them?'},
+    rent:{title:t('tpl_rent'),msg:lang==='zh'?'您好'+fn+'！我是 Rex，了解到您在寻找出租房源。🏡\n\n我已为您筛选了符合预算和区域的房源，需要我发给您参考吗？':lang==='ms'?'Hai '+fn+'! Rex di sini. Saya nampak anda mencari rumah sewa. 🏡\n\nSaya ada beberapa pilihan dalam bajet anda — boleh saya hantar?':'Hi '+fn+'! Rex here from Sabah Realty. I saw you\'re looking for a rental. 🏡\n\nI\'ve found some great options within your budget — shall I send them?'},
+    mm2h:{title:t('tpl_mm2h'),msg:lang==='zh'?'您好'+fn+'！我是 Rex，了解到您对 MM2H 签证感兴趣。📋\n\n我可以为您详细讲解最新的申请条件，方便聊聊吗？':lang==='ms'?'Hai '+fn+'! Saya Rex. Saya nampak anda berminat dengan visa MM2H. 📋\n\nSaya boleh terangkan syarat-syarat terkini. Boleh kita bincang?':'Hi '+fn+'! I\'m Rex. I see you\'re interested in the MM2H visa programme. 📋\n\nHappy to walk you through the latest requirements. Are you free for a quick chat?'},
+    anon:{title:t('tpl_anon'),msg:lang==='zh'?'您好！我是 Rex Yap，Sabah Realty 房产顾问。😊\n\n早前您在我们的 Merlin 平台上有询问房产相关问题。我很乐意为您提供更多资讯，方便聊聊吗？':lang==='ms'?'Hai! Saya Rex Yap dari Sabah Realty. 😊\n\nAnda baru-baru ini membuat pertanyaan di platform Merlin kami. Saya ingin tahu lebih lanjut tentang keperluan anda. Boleh kita sembang?':'Hi! I\'m Rex Yap from Sabah Realty. 😊\n\nYou recently made an enquiry on our Merlin platform. I\'d love to learn more about what you\'re looking for — would you be open to a quick chat?'}
+  };
+  return m[type]||m.anon;
+}
+
+// ═══════════════════════════════════════════════════════
+// POPUP
+// ═══════════════════════════════════════════════════════
+function showPopup(l){pendingLead=l;document.getElementById('pp-msg').textContent=buildWAMsg(l);document.getElementById('wa-popup').classList.add('show');}
+function sendPopup(){if(!pendingLead)return;window.open('https://wa.me/'+getWANum()+'?text='+encodeURIComponent(buildWAMsg(pendingLead)),'_blank');disPopup();}
+function disPopup(){document.getElementById('wa-popup').classList.remove('show');pendingLead=null;}
+
+// ═══════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════
+function loadLS(){
+  try{var r=localStorage.getItem('merlin_crm_leads');if(r){var ls=JSON.parse(r);ls.forEach(function(l){if(!l.status)l.status='new';if(!l.id)l.id=l.sessionId||(Date.now()+Math.random());var idx=leads.findIndex(function(x){return x.sessionId===l.sessionId||x.id===l.id;});if(idx<0)leads.push(l);else leads[idx]=Object.assign(leads[idx],l);});}}catch(e){}
+  try{var n=localStorage.getItem('merlin_crm_notes');if(n)notes=JSON.parse(n);}catch(e){}
+  try{var s=localStorage.getItem('merlin_ai_data');if(s){var d=JSON.parse(s);aiSummaries=d.summaries||{};aiReplies=d.replies||{};}}catch(e){}
+}
+function saveLS(){
+  try{localStorage.setItem('merlin_crm_leads',JSON.stringify(leads));localStorage.setItem('merlin_crm_notes',JSON.stringify(notes));localStorage.setItem('merlin_ai_data',JSON.stringify({summaries:aiSummaries,replies:aiReplies}));}catch(e){}
+}
+function savePhoneEdit(lid){
+  var inp=document.getElementById('pe-'+lid);if(!inp||!inp.value.trim())return;
+  var val=inp.value.trim();
+  var lead=leads.find(function(l){return l.id==lid;});
+  if(lead){lead.customerPhone=val;saveLS();try{firebase.firestore().collection('merlin_leads').doc(String(lead.sessionId||lead.id)).update({customerPhone:val});}catch(e){}toast('✅ '+(lang==='zh'?'电话已保存':'Phone saved'));render();}
+}
+
+function loadDemo(){
+  document.getElementById('demo-bar').style.display='flex';
+  var now=Date.now(),vA='fp_A_'+now.toString(36),vB='fp_B_'+now.toString(36),vC='fp_C_'+now.toString(36);
+  leads=[
+    {id:now-86400000*2,sessionId:'d1',visitorId:vA,time:new Date(now-86400000*2).toISOString(),flow:'buy',answers:['🏠 买房','🏢 公寓','🛏️ 3','🚿 2','💰 RM500k–800k','🏠 自住','📍 KK'],customerName:'陈小姐 Ms Chan',customerPhone:'601198765432',lang:'zh',status:'contacted',flowCompleted:true},
+    {id:now-3600000*18,sessionId:'d2',visitorId:vB,time:new Date(now-3600000*18).toISOString(),flow:'rent',answers:['🔑 出租','🛏️ 3','🚿 2','💰 RM2k–3.5k','📍 Tawau','👨‍👩‍👧 Family'],customerName:'Ahmad B.',customerPhone:'601187654321',lang:'ms',status:'new',flowCompleted:true},
+    {id:now-3600000*5,sessionId:'d3',visitorId:vC,time:new Date(now-3600000*5).toISOString(),flow:'buy',answers:['🏠 Buy','🏠 Terrace','🛏️ 4','🚿 3','💰 RM800k–1.2M','📈 Investment','📍 KK'],customerName:'',customerPhone:'',lang:'en',status:'new',flowCompleted:false},
+    {id:now-3600000*2,sessionId:'d4',visitorId:vA,time:new Date(now-3600000*2).toISOString(),flow:'mm2h',answers:[],msg:'MM2H enquiry',customerName:'陈小姐 Ms Chan',customerPhone:'601198765432',lang:'zh',status:'new',flowCompleted:false},
+    {id:now-1800000,sessionId:'d5',visitorId:vB,time:new Date(now-1800000).toISOString(),flow:'rent',answers:['🔑 Rent','🛏️ 1','🚿 1','💰 RM500–1k','📍 Sandakan','👤 Self'],customerName:'Ahmad B.',customerPhone:'601187654321',lang:'ms',status:'new',flowCompleted:true},
+    {id:now-300000,sessionId:'d6',visitorId:'fp_D_new',time:new Date(now-300000).toISOString(),flow:'buy',answers:['🏠 Beli','🏡 Bungalow','🛏️ 5+','🚿 4+','💰 RM1.2M+','📍 KK'],customerName:'',customerPhone:'',lang:'ms',status:'new',flowCompleted:false}
+  ];
+  saveLS();render();updateStats();
+}
+
+// ═══════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════
+function typeInfo(flow){var m={buy:{lk:'t_buy',e:'🏠',c:'t-buy'},rent:{lk:'t_rent',e:'🔑',c:'t-rent'},mm2h:{lk:'t_mm2h',e:'📋',c:'t-mm2h'},contact:{lk:'t_contact',e:'📞',c:'t-contact'},chat:{lk:'t_chat',e:'💬',c:'t-chat'},newlaunch:{lk:'t_newlaunch',e:'🏗️',c:'t-newlaunch'},foreign:{lk:'t_foreign',e:'🌏',c:'t-foreign'}};var r=m[flow]||m.chat;return{label:t(r.lk),emoji:r.e,cls:r.c};}
+
+// ── LEAD SCORE ENGINE ──
+function calcLeadScore(lead){
+  var score=0,signals=[];
+  var dn=lead.customerName||lead.name||'',dp=lead.customerPhone||lead.phone||'';
+  if(dn){score+=20;signals.push('已留姓名');}
+  if(dp){score+=25;signals.push('已留电话');}
+  if(lead.flowCompleted){score+=15;signals.push('完成问卷');}
+  if(lead.flow==='buy'){score+=10;signals.push('买房意向');}
+  if(lead.flow==='mm2h'){score+=10;signals.push('MM2H');}
+  if(lead.flow==='newlaunch'){score+=10;signals.push('新楼盘');}
+  if(lead.flow==='foreign'){score+=8;signals.push('海外买家');}
+  var vc=getVisitCount(lead);
+  if(vc>=3){score+=15;signals.push('多次回访×'+vc);}
+  else if(vc===2){score+=8;signals.push('回访×2');}
+  if(lead.waClickCount&&lead.waClickCount>0){score+=10;signals.push('点WA×'+lead.waClickCount);}
+  if(lead.viewedProps&&lead.viewedProps.length>0){score+=5;signals.push('浏览房源');}
+  if(lead.status==='contacted'){score+=5;}
+  score=Math.min(score,100);
+  var grade=score>=80?'A':score>=60?'B':score>=40?'C':'D';
+  return{score:score,grade:grade,signals:signals};
+}
+function safeTime(v){if(!v)return 0;if(typeof v==='object'&&v.seconds)return v.seconds*1000;var d=new Date(v);return isNaN(d)?0:d.getTime();}
+function fmtTime(iso){var ts=safeTime(iso),d=new Date(ts||Date.now()),n=new Date(),diff=(n-d)/1000;if(diff<60)return t('tn');if(diff<3600)return Math.floor(diff/60)+t('tm');if(diff<86400)return Math.floor(diff/3600)+t('th');return(d.getMonth()+1)+'/'+d.getDate()+' '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);}
+function buildSummary(lead){var keys=lead.flow==='rent'?t('rent_keys'):(lead.flow==='buy'?t('buy_keys'):[]);if(lead.answers&&lead.answers.length)return lead.answers.map(function(a,i){return((Array.isArray(keys)&&keys[i])?keys[i]:(t('lbl_q')+(i+1)))+': '+a.replace(/^[^\s]+\s/,'');}).join(' · ');return lead.msg||'–';}
+function buildTags(lead){if(!lead.answers||!lead.answers.length)return[];return lead.answers.slice(0,5).map(function(a){return a.replace(/^[^\s]+\s/,'').trim();}).filter(Boolean);}
+function lbadge(l){if(!l)return'';return'<span class="lang-pill">'+({zh:'CN',en:'EN',ms:'BM'}[l]||l)+'</span>';}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// ═══════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════
+function render(){
+  var grid=document.getElementById('lead-grid');
+  var search=(document.getElementById('search').value||'').toLowerCase();
+  var sv=document.getElementById('sort-sel').value||'newest';
+  var filtered=leads.filter(function(l){
+    if(filter==='anon')return isAnon(l);
+    if(filter!=='all'&&l.flow!==filter)return false;
+    if(search){var hay=(l.customerName||l.name||'')+(l.customerPhone||l.phone||'')+(l.msg||'')+buildSummary(l)+(notes[l.id]||'')+(l.visitorId||'');if(hay.toLowerCase().indexOf(search)===-1)return false;}
+    return true;
+  });
+  filtered.sort(function(a,b){
+    if(sv==='oldest')return safeTime(a.time)-safeTime(b.time);
+    if(sv==='status'){var o={new:0,contacted:1,closed:2};return(o[a.status]||0)-(o[b.status]||0);}
+    if(sv==='visits')return getVisitCount(b)-getVisitCount(a);
+    return safeTime(b.time)-safeTime(a.time);
+  });
+  if(!filtered.length){grid.innerHTML='<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-text">'+t('no_match')+'</div></div>';return;}
+  grid.innerHTML='';
+  filtered.forEach(function(lead){
+    var ti=typeInfo(lead.flow),sm=buildSummary(lead),tags=buildTags(lead);
+    var isOpen=openId===lead.id,sc=lead.status||'new';
+    var dn=lead.customerName||lead.name||'',dp=lead.customerPhone||lead.phone||'';
+    var anon=isAnon(lead),vc=getVisitCount(lead);
+    var waHref='https://wa.me/'+getWANum()+'?text='+encodeURIComponent(buildWAMsg(lead));
+    var card=document.createElement('div');
+    card.className='lcard '+ti.cls+(isOpen?' sel':'');
+    var ls=calcLeadScore(lead);
+    var isHot=ls.grade==='A'||(ls.grade==='B'&&(lead.customerPhone||lead.phone));
+    card.innerHTML='<div class="lcard-inner">'
+      +'<div class="av">'+ti.emoji+'</div>'
+      +'<div class="lc-body">'
+        +'<div class="lc-head">'
+          +'<span class="lc-id">#'+String(lead.id).slice(-6)+'</span>'
+          +'<span class="badge">'+ti.label+'</span>'
+          +(dn?'<span class="lc-name">'+esc(dn)+'</span>':'')
+          +(anon?'<span class="anon-pill">👻 '+t('anon_lbl')+'</span>':'')
+          +(vc>1?'<span class="return-pill">🔄 ×'+vc+'</span>':'')
+          +lbadge(lead.lang)
+          +(isHot?'<span class="hot-badge">🔥 HOT</span>':'')
+          +'<span class="score-badge score-'+ls.grade+'">'+ls.grade+' '+ls.score+'</span>'
+          +(aiSummaries[lead.id]?'<span class="ai-chip">✨ AI</span>':'')
+          +'<span class="lc-time">'+fmtTime(lead.time)+'</span>'
+        +'</div>'
+        +'<div class="lc-summary">'+esc(sm)+'</div>'
+        +(tags.length?'<div class="lc-tags">'+tags.map(function(g){return'<span class="tag">'+esc(g)+'</span>';}).join('')+'</div>':'')
+        +((dn||dp)?'<div class="lc-contact">'+(dn?'👤 '+esc(dn):'')+( dp?' · 📞 '+esc(dp):'')+'</div>':'')
+        +(notes[lead.id]&&notes[lead.id].trim()?'<div class="lc-note-pre">📝 '+esc(notes[lead.id].slice(0,50))+(notes[lead.id].length>50?'…':'')+'</div>':'')
+        +(aiSummaries[lead.id]?'<div class="lc-note-pre" style="color:var(--purple)">✨ '+esc(aiSummaries[lead.id].slice(0,65))+'…</div>':'')
+      +'</div>'
+      +'<div class="lc-actions">'
+        +'<select class="status-sel '+sc+'" onchange="updStatus(\''+lead.id+'\',this.value,this)" onclick="event.stopPropagation()">'
+          +'<option value="new"'+(sc==='new'?' selected':'')+'>'+t('st_new')+'</option>'
+          +'<option value="contacted"'+(sc==='contacted'?' selected':'')+'>'+t('st_contacted')+'</option>'
+          +'<option value="closed"'+(sc==='closed'?' selected':'')+'>'+t('st_closed')+'</option>'
+        +'</select>'
+        +'<a class="wa-chip" href="'+waHref+'" target="_blank" onclick="event.stopPropagation()">💬 WA</a>'
+        +'<button class="del-btn" onclick="delLead(\''+lead.id+'\',event)">✕</button>'
+      +'</div>'
+      +(sc==='new'?'<div class="new-dot"></div>':'')
+    +'</div>';
+    card.addEventListener('click',function(e){if(e.target.tagName==='SELECT'||e.target.tagName==='BUTTON'||e.target.tagName==='A')return;togDetail(lead);});
+    grid.appendChild(card);
+    if(isOpen)grid.appendChild(buildDP(lead));
+  });
+  updateStats();
+  updateHotLeadsBar();
+  document.getElementById('last-upd').textContent=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('nb-new').textContent=leads.filter(function(l){return l.status==='new';}).length;
+}
+
+function updateHotLeadsBar(){
+  var bar=document.getElementById('hot-leads-bar');
+  var chips=document.getElementById('hot-chips');
+  if(!bar||!chips)return;
+  var hotLeads=leads.filter(function(l){var ls=calcLeadScore(l);return ls.grade==='A'||(ls.grade==='B'&&(l.customerPhone||l.phone));}).sort(function(a,b){return calcLeadScore(b).score-calcLeadScore(a).score;}).slice(0,5);
+  if(!hotLeads.length){bar.classList.remove('has-hot');return;}
+  bar.classList.add('has-hot');
+  chips.innerHTML=hotLeads.map(function(l){
+    var dn=l.customerName||l.name||'访客#'+String(l.id).slice(-4);
+    var ls=calcLeadScore(l);
+    return'<span class="hot-chip" onclick="scrollToLead(\''+l.id+'\')">'+esc(dn)+' '+ls.grade+ls.score+'</span>';
+  }).join('');
+}
+
+function scrollToLead(id){
+  showV('leads');
+  openId=id;
+  render();
+  setTimeout(function(){var el=document.querySelector('.lcard.sel');if(el)el.scrollIntoView({behavior:'smooth',block:'center'});},120);
+}
+
+// ═══════════════════════════════════════════════════════
+// DETAIL PANEL
+// ═══════════════════════════════════════════════════════
+function buildDP(lead){
+  var panel=document.createElement('div');panel.className='detail-panel';
+  var curTab=openTab[lead.id]||'overview';
+  var dn=lead.customerName||lead.name||'',dp=lead.customerPhone||lead.phone||'';
+  var vc=getVisitCount(lead);
+  var keys=lead.flow==='rent'?t('rent_keys'):(lead.flow==='buy'?t('buy_keys'):[]);
+  var tabs=['overview','ai','templates','wa'].map(function(tb){
+    var lbs={overview:t('dp_overview'),ai:t('dp_ai'),templates:t('dp_templates'),wa:t('dp_wa')};
+    return'<button class="dp-tab'+(curTab===tb?' on':'')+'" onclick="switchTab(\''+lead.id+'\',\''+tb+'\')">'+lbs[tb]+'</button>';
+  }).join('');
+  var body='';
+
+  if(curTab==='overview'){
+    var fs='';
+    if(dn)fs+='<div class="dp-field"><label>'+t('lbl_name')+'</label><div class="fv" style="color:var(--g1)">'+esc(dn)+'</div></div>';
+    if(dp)fs+='<div class="dp-field"><label>'+t('lbl_phone')+'</label><div class="fv"><a href="tel:'+esc(dp)+'" style="color:var(--g1)">'+esc(dp)+'</a></div></div>';
+    else fs+='<div class="dp-field" style="grid-column:1/3"><label>'+t('lbl_edit_phone2')+'</label><div class="fv"><div class="phone-edit"><input class="phone-inp" id="pe-'+lead.id+'" placeholder="601XXXXXXXX"><button class="save-btn" onclick="savePhoneEdit(\''+lead.id+'\')">'+t('lbl_save')+'</button></div></div></div>';
+    if(lead.visitorId){fs+='<div class="dp-field"><label>'+t('lbl_vid')+'</label><div class="fv" style="font-family:\'JetBrains Mono\',monospace;font-size:.69rem;color:var(--purple)">…'+lead.visitorId.slice(-14)+'</div></div>';fs+='<div class="dp-field"><label>'+t('lbl_visits')+'</label><div class="fv" style="color:var(--purple)">×'+vc+'</div></div>';}
+    if(lead.answers&&lead.answers.length)lead.answers.forEach(function(a,i){var lbl=(Array.isArray(keys)&&keys[i])?keys[i]:(t('lbl_q')+(i+1));fs+='<div class="dp-field"><label>'+esc(lbl)+'</label><div class="fv">'+esc(a)+'</div></div>';});
+    else fs+='<div class="dp-field" style="grid-column:1/-1"><label>'+t('lbl_inquiry')+'</label><div class="fv">'+esc(lead.msg||'–')+'</div></div>';
+
+    var vh='';
+    if(lead.visitorId&&vc>1){var vm=buildVisitorMap(),hist=(vm[lead.visitorId]||[]).sort(function(a,b){return safeTime(b.time)-safeTime(a.time);});vh='<div class="vh-box"><div class="vh-head">'+t('vh_title')+' ×'+hist.length+'</div>'+hist.map(function(h){var ti=typeInfo(h.flow),cur=h.id===lead.id;return'<div class="vh-row"><span class="vh-flow">'+ti.emoji+' '+ti.label+(cur?' <span class="vh-curr">← '+t('curr_lbl')+'</span>':'')+'</span><span class="vh-time">'+fmtTime(h.time)+'</span></div>';}).join('')+'</div>';}
+
+    // Lead Score Box
+    var ls2=calcLeadScore(lead);
+    var barW=Math.round(ls2.score)+'%';
+    var scoreBox='<div class="score-box">'
+      +'<div class="sec-head" style="margin-bottom:8px">🎯 线索评分</div>'
+      +'<div class="score-total-row">'
+        +'<div class="score-grade-big score-'+ls2.grade+'" style="color:'+(ls2.grade==='A'?'var(--g1)':ls2.grade==='B'?'var(--g2)':ls2.grade==='C'?'var(--gold)':'var(--red)')+'">'+ls2.grade+'</div>'
+        +'<div><div class="score-total-num">'+ls2.score+'/100</div><div class="score-label">'+(ls2.grade==='A'?'高价值线索':ls2.grade==='B'?'优质线索':ls2.grade==='C'?'一般线索':'冷线索')+'</div></div>'
+        +'<div style="flex:1;margin-left:12px"><div class="score-bar-sm" style="height:8px"><div class="score-bar-fill" style="width:'+barW+';background:'+(ls2.grade==='A'?'var(--g1)':ls2.grade==='B'?'var(--g2)':ls2.grade==='C'?'var(--gold)':'var(--red)')+'"></div></div></div>'
+      +'</div>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:5px">'
+        +ls2.signals.map(function(s){return'<span class="tag">✦ '+esc(s)+'</span>';}).join('')
+      +'</div>'
+    +'</div>';
+
+    // Property Tracking Box
+    var ptBox='';
+    if((lead.viewedProps&&lead.viewedProps.length>0)||lead.waClickCount>0){
+      ptBox='<div class="pts-box"><div class="sec-head" style="margin-bottom:8px">🏘️ 浏览记录</div>';
+      if(lead.viewedProps&&lead.viewedProps.length>0){
+        ptBox+=lead.viewedProps.slice(0,5).map(function(p){
+          var pname=typeof p==='object'?(p.name||p.title||JSON.stringify(p)):String(p);
+          return'<div class="pts-row"><span class="pts-prop">🏠 '+esc(pname)+'</span></div>';
+        }).join('');
+      }
+      if(lead.waClickCount>0){ptBox+='<div class="pts-row"><span class="pts-prop">💬 点击 WhatsApp 联系</span><span class="pts-meta">×'+lead.waClickCount+'</span></div>';}
+      ptBox+='</div>';
+    }
+
+    var aiBox='<div class="ai-summary-box"><div class="ai-sum-head"><div class="ai-logo-sm">✨</div><span class="ai-sum-lbl">AI 分析</span><button class="ai-sum-gen" onclick="genAISummary(\''+lead.id+'\')" id="aig-'+lead.id+'">'+t('ai_gen')+'</button></div><div class="ai-sum-text" id="ais-'+lead.id+'">'+esc(aiSummaries[lead.id]||(lang==='zh'?'点击「生成」获取 AI 顾客分析…':'Click "Generate" for AI customer analysis…'))+'</div></div>';
+    body='<div class="dp-grid">'+fs+'</div>'+scoreBox+ptBox+aiBox+vh+'<div style="margin-top:2px"><label style="font-size:.57rem;color:var(--mu);display:block;text-transform:uppercase;letter-spacing:.08em;font-family:\'JetBrains Mono\',monospace;margin-bottom:4px">备注 Notes</label><textarea class="note-area" placeholder="'+t('note_ph')+'" oninput="saveNote(\''+lead.id+'\',this.value)">'+esc(notes[lead.id]||'')+'</textarea></div>';
+  }
+  else if(curTab==='ai'){
+    var cur=aiReplies[lead.id+aiTone]||'';
+    body='<div class="ai-reply-sec">'
+      +'<div class="sec-head">🤖 '+t('ai_reply_title')+'</div>'
+      +'<div class="ai-tone-row">'+['pro','warm','urgent','casual'].map(function(tn){return'<button class="tone-btn'+(aiTone===tn?' on':'')+'" onclick="setTone(\''+tn+'\',\''+lead.id+'\')">'+t('tone_'+tn)+'</button>';}).join('')+'</div>'
+      +'<div class="ai-output" id="ao-'+lead.id+'">'+esc(cur||(lang==='zh'?'点击「生成回复」，AI 将为您撰写个性化的 WhatsApp 消息。':'Click "Generate Reply" to create a personalised WhatsApp message.'))+'</div>'
+      +'<div class="ai-gen-row">'
+        +'<button class="ai-gen-full" onclick="genAIReply(\''+lead.id+'\')" id="agb-'+lead.id+'">'+t('ai_gen_btn')+'</button>'
+        +(dp?'<a class="ai-gen-wa" id="aiwa-'+lead.id+'" href="https://wa.me/'+dp.replace(/\D/g,'')+'?text='+encodeURIComponent(cur||'')+'" target="_blank">'+t('ai_send_wa')+'</a>':'')
+        +'<button class="copy-btn" onclick="cpEl(\'ao-'+lead.id+'\')">'+t('copy_btn')+'</button>'
+      +'</div>'
+    +'</div>';
+  }
+  else if(curTab==='templates'){
+    var tplH='<div class="tpl-sec"><div class="sec-head">⚡ '+t('tpl_title')+'</div><div class="tpl-grid">'
+      +['buy','rent','mm2h','anon'].map(function(tp){var tpl=getTpl(lead,tp);var num=dp?dp.replace(/\D/g,''):getWANum();return'<a class="tpl-btn" href="https://wa.me/'+num+'?text='+encodeURIComponent(tpl.msg)+'" target="_blank" onclick="event.stopPropagation()"><span class="tpl-type">'+tpl.title+'</span>'+esc(tpl.msg.split('\n')[0].slice(0,55))+'…</a>';}).join('')
+    +'</div></div>';
+    body=tplH+'<div style="margin-top:10px"><textarea class="note-area" placeholder="'+t('note_ph')+'" oninput="saveNote(\''+lead.id+'\',this.value)">'+esc(notes[lead.id]||'')+'</textarea></div>';
+  }
+  else if(curTab==='wa'){
+    var wm=buildWAMsg(lead),wSelf='https://wa.me/'+getWANum()+'?text='+encodeURIComponent(wm);
+    var wCust=dp?'https://wa.me/'+dp.replace(/\D/g,'')+'?text='+encodeURIComponent(getTpl(lead,lead.flow||'anon').msg):'';
+    body='<div class="wa-sec"><div class="sec-head">'+t('wa_prev_lbl')+'</div>'
+      +'<div class="wa-prev-text">'+esc(wm)+'</div>'
+      +'<div class="wa-actions">'
+        +'<a class="wa-send-self" href="'+wSelf+'" target="_blank" onclick="event.stopPropagation()">'+t('wa_send_self')+'</a>'
+        +(wCust?'<a class="wa-send-cust" href="'+wCust+'" target="_blank" onclick="event.stopPropagation()">'+t('wa_send_cust')+'</a>':'<span style="font-size:.71rem;color:var(--mu);align-self:center">'+t('no_phone')+'</span>')
+        +'<button class="copy-btn" onclick="cpEl(\'wa-prev-el-'+lead.id+'\',\''+encodeURIComponent(wm)+'\')">'+t('copy_btn')+'</button>'
+      +'</div>'
+    +'</div>';
+  }
+
+  panel.innerHTML='<div class="dp-tabs">'+tabs+'</div><div class="dp-body">'+body+'</div>';
+  return panel;
+}
+
+function switchTab(lid,tab){openTab[lid]=tab;render();}
+function togDetail(lead){openId=(openId===lead.id)?null:lead.id;if(openId)openTab[lead.id]=openTab[lead.id]||'overview';render();}
+function updStatus(id,val,sel){var l=leads.find(function(x){return x.id==id;});if(l){l.status=val;sel.className='status-sel '+val;saveLS();setTimeout(render,80);}}
+function saveNote(id,val){notes[id]=val;saveLS();}
+function setTone(tn,lid){aiTone=tn;if(lid)openTab[lid]='ai';render();}
+function delLead(id,e){e.stopPropagation();if(!confirm(t('del_c')))return;leads=leads.filter(function(l){return l.id!=id;});if(openId==id)openId=null;saveLS();render();toast(t('del_t'));}
+function setF(f,el){filter=f;document.querySelectorAll('.fc').forEach(function(c){c.classList.remove('on');});el.classList.add('on');render();}
+function cpEl(elId,enc){var txt=enc?decodeURIComponent(enc):(document.getElementById(elId)?document.getElementById(elId).textContent:'');navigator.clipboard.writeText(txt).then(function(){toast('✅ Copied!');});}
+
+// ═══════════════════════════════════════════════════════
+// AI FUNCTIONS (Claude API)
+// ═══════════════════════════════════════════════════════
+async function callClaude(sys,msgs,maxTok){
+  maxTok=maxTok||800;
+  var resp=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:maxTok,system:sys,messages:msgs})
+  });
+  var data=await resp.json();
+  if(data.error)throw new Error(data.error.message);
+  return(data.content||[]).map(function(c){return c.text||'';}).join('');
+}
+
+async function genAISummary(lid){
+  var lead=leads.find(function(l){return l.id==lid;});if(!lead)return;
+  var btn=document.getElementById('aig-'+lid),el=document.getElementById('ais-'+lid);
+  if(btn){btn.textContent='⏳';btn.disabled=true;}
+  if(el)el.textContent=lang==='zh'?'AI 分析中…':'Analysing…';
+  try{
+    var sys='You are a real estate CRM AI for Rex Yap, Sabah Realty, Kota Kinabalu Malaysia. Analyse the lead and provide a 2-sentence summary: conversion likelihood (High/Medium/Low) and one recommended action. Reply in '+(lang==='zh'?'简体中文':lang==='ms'?'Bahasa Melayu':'English')+'. Be concise and actionable.';
+    var dn=lead.customerName||lead.name||'Anonymous';
+    var dp=lead.customerPhone||lead.phone||'None';
+    var result=await callClaude(sys,[{role:'user',content:'Type: '+typeInfo(lead.flow).label+'\nName: '+dn+'\nPhone: '+dp+'\nRequirements: '+buildSummary(lead)+'\nVisits: '+getVisitCount(lead)+'\nStatus: '+(lead.status||'new')}]);
+    aiSummaries[lid]=result;saveLS();
+    if(el)el.textContent=result;
+    toast('✅ '+(lang==='zh'?'AI 分析完成':'Analysis done'));
+  }catch(e){if(el)el.textContent='⚠️ '+e.message;}
+  if(btn){btn.textContent=t('ai_gen');btn.disabled=false;}
+}
+
+async function genAIReply(lid){
+  var lead=leads.find(function(l){return l.id==lid;});if(!lead)return;
+  var btn=document.getElementById('agb-'+lid),el=document.getElementById('ao-'+lid);
+  if(btn){btn.textContent=t('ai_generating');btn.disabled=true;}
+  if(el)el.textContent=lang==='zh'?'AI 生成中…':'Generating…';
+  var toneDesc={pro:'professional and formal',warm:'warm, friendly and approachable',urgent:'creates gentle urgency',casual:'casual and conversational'};
+  try{
+    var dn=lead.customerName||lead.name||'',fn=dn?dn.split(' ')[0]:(lang==='zh'?'顾客':'the customer');
+    var sys='You are Rex Yap, trusted property consultant at Sabah Realty KK Malaysia. Write a personalised WhatsApp follow-up message. Tone: '+toneDesc[aiTone]+'. Language: '+(lang==='zh'?'简体中文':lang==='ms'?'Bahasa Melayu':'English')+'. Under 120 words. No markdown. End with a question. Sign as Rex.';
+    var result=await callClaude(sys,[{role:'user',content:'Customer: '+(dn||'Anonymous')+'\nType: '+typeInfo(lead.flow).label+'\nRequirements: '+buildSummary(lead)+'\nVisits: '+getVisitCount(lead)}]);
+    aiReplies[lid+aiTone]=result;saveLS();
+    if(el)el.textContent=result;
+    var dp=lead.customerPhone||lead.phone||'';
+    var waEl=document.getElementById('aiwa-'+lid);
+    if(waEl&&dp)waEl.href='https://wa.me/'+dp.replace(/\D/g,'')+'?text='+encodeURIComponent(result);
+    toast('✅ '+(lang==='zh'?'AI 回复已生成':'Reply generated'));
+  }catch(e){if(el)el.textContent='⚠️ '+e.message;}
+  if(btn){btn.textContent=t('ai_gen_btn');btn.disabled=false;}
+}
+
+async function genInsights(){
+  var btn=document.getElementById('insights-gen-btn'),list=document.getElementById('insight-list');
+  if(btn){btn.disabled=true;btn.textContent='⏳';}
+  if(list)list.innerHTML='<div class="insight-item"><div class="ins-dot pu"></div><span>'+(lang==='zh'?'AI 分析中…':'Analysing…')+'</span></div>';
+  var buy=leads.filter(function(l){return l.flow==='buy';}).length;
+  var rent=leads.filter(function(l){return l.flow==='rent';}).length;
+  var nl=leads.filter(function(l){return l.flow==='newlaunch';}).length;
+  var fo=leads.filter(function(l){return l.flow==='foreign';}).length;
+  var anon=leads.filter(function(l){return isAnon(l);}).length;
+  var ret=leads.filter(function(l){return getVisitCount(l)>1;}).length;
+  var closed=leads.filter(function(l){return l.status==='closed';}).length;
+  var grades={A:0,B:0,C:0,D:0};leads.forEach(function(l){var g=calcLeadScore(l).grade;grades[g]++;});
+  try{
+    var sys='You are a real estate analytics AI for Rex Yap, Sabah Realty Malaysia. Based on the CRM data, provide exactly 4 short actionable insights. Reply in '+(lang==='zh'?'简体中文':lang==='ms'?'Bahasa Melayu':'English')+'. Return ONLY a JSON array: [{"text":"insight text","type":"g"},...]. Types: g=positive, b=info, gold=warning, pu=suggestion. No markdown, no extra text.';
+    var result=await callClaude(sys,[{role:'user',content:'Total:'+leads.length+' Buy:'+buy+' Rent:'+rent+' NewLaunch:'+nl+' Foreign:'+fo+' Anonymous:'+anon+' Returning:'+ret+' Closed:'+closed+' GradeA:'+grades.A+' GradeB:'+grades.B+' GradeC:'+grades.C+' GradeD:'+grades.D+' ConversionRate:'+(leads.length?Math.round(closed/leads.length*100):0)+'%'}],600);
+    var clean=result.replace(/```json|```/g,'').trim();
+    var items=JSON.parse(clean);
+    list.innerHTML=items.map(function(it){return'<div class="insight-item"><div class="ins-dot '+it.type+'"></div><span>'+esc(it.text)+'</span></div>';}).join('');
+  }catch(e){if(list)list.innerHTML='<div class="insight-item"><div class="ins-dot pu"></div><span>⚠️ '+esc(e.message)+'</span></div>';}
+  if(btn){btn.disabled=false;btn.textContent='🔮 '+t('ai_gen');}
+}
+
+// ═══════════════════════════════════════════════════════
+// AI CHAT PANEL
+// ═══════════════════════════════════════════════════════
+var chatHistory=[];
+function openAIChat(){document.getElementById('ai-chat-panel').classList.add('open');}
+function closeAIChat(){document.getElementById('ai-chat-panel').classList.remove('open');}
+function setAIQ(q){document.getElementById('acp-inp').value=q;sendAIMsg();}
+function addBubble(role,text){
+  var msgs=document.getElementById('acp-msgs');
+  var div=document.createElement('div');div.className='acp-msg '+role;
+  div.innerHTML='<div class="acp-bubble">'+(role==='typing'?'<div class="acp-typing-dots"><span></span><span></span><span></span></div>':esc(text))+'</div>';
+  if(role==='typing')div.id='typing-ind';
+  msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;return div;
+}
+async function sendAIMsg(){
+  var inp=document.getElementById('acp-inp'),snd=document.getElementById('acp-send-btn');
+  var msg=(inp.value||'').trim();if(!msg)return;
+  inp.value='';snd.disabled=true;
+  addBubble('user',msg);chatHistory.push({role:'user',content:msg});
+  addBubble('typing','');
+  var buy=leads.filter(function(l){return l.flow==='buy';}).length;
+  var rent=leads.filter(function(l){return l.flow==='rent';}).length;
+  var nl=leads.filter(function(l){return l.flow==='newlaunch';}).length;
+  var fo=leads.filter(function(l){return l.flow==='foreign';}).length;
+  var anon=leads.filter(function(l){return isAnon(l);}).length;
+  var closed=leads.filter(function(l){return l.status==='closed';}).length;
+  var ret=leads.filter(function(l){return getVisitCount(l)>1;}).length;
+  var hot=leads.filter(function(l){var s=calcLeadScore(l);return s.grade==='A'||(s.grade==='B'&&(l.customerPhone||l.phone));}).length;
+  var sys='You are Merlin AI, personal CRM assistant for Rex Yap at Sabah Realty, Kota Kinabalu, Malaysia. CRM snapshot: Total leads:'+leads.length+' | Buy:'+buy+' | Rent:'+rent+' | New Launch:'+nl+' | Foreign Buyer:'+fo+' | Hot Leads(A/B grade):'+hot+' | Anonymous:'+anon+' | Returning visitors:'+ret+' | Closed:'+closed+'. Be concise, practical, professional. Reply in same language as user (Chinese/English/Malay). Help with lead analysis, WA message drafting, follow-up strategies, and customer insights.';
+  try{
+    var result=await callClaude(sys,chatHistory,1000);
+    chatHistory.push({role:'assistant',content:result});
+    var ti=document.getElementById('typing-ind');if(ti)ti.remove();
+    addBubble('ai',result);
+  }catch(e){var ti=document.getElementById('typing-ind');if(ti)ti.remove();addBubble('ai','⚠️ '+e.message);}
+  snd.disabled=false;inp.focus();
+}
+
+// ═══════════════════════════════════════════════════════
+// STATS & ANALYTICS
+// ═══════════════════════════════════════════════════════
+function updateStats(){
+  var buy=leads.filter(function(l){return l.flow==='buy';}).length;
+  var rent=leads.filter(function(l){return l.flow==='rent';}).length;
+  var nl=leads.filter(function(l){return l.flow==='newlaunch';}).length;
+  var fo=leads.filter(function(l){return l.flow==='foreign';}).length;
+  var anon=leads.filter(function(l){return isAnon(l);}).length;
+  var ret=leads.filter(function(l){return getVisitCount(l)>1;}).length;
+  var hot=leads.filter(function(l){var s=calcLeadScore(l);return s.grade==='A'||(s.grade==='B'&&(l.customerPhone||l.phone));}).length;
+  document.getElementById('s-total').textContent=leads.length;
+  document.getElementById('s-buy').textContent=buy;
+  document.getElementById('s-rent').textContent=rent;
+  document.getElementById('s-anon').textContent=anon;
+  document.getElementById('s-return').textContent=ret;
+  // Update hot stat badge if present
+  var hs=document.getElementById('s-hot');if(hs)hs.textContent=hot;
+  // Update newlaunch/foreign stat badges if present
+  var ns=document.getElementById('s-newlaunch');if(ns)ns.textContent=nl;
+  var fs=document.getElementById('s-foreign');if(fs)fs.textContent=fo;
+  document.getElementById('nb-new').textContent=leads.filter(function(l){return l.status==='new';}).length;
+  renderAnalytics();
+}
+function renderAnalytics(){
+  var ac=document.getElementById('analytics-content');
+  if(!ac||document.getElementById('v-analytics').style.display==='none')return;
+  var buy=leads.filter(function(l){return l.flow==='buy';}).length;
+  var rent=leads.filter(function(l){return l.flow==='rent';}).length;
+  var mm2h=leads.filter(function(l){return l.flow==='mm2h';}).length;
+  var nl=leads.filter(function(l){return l.flow==='newlaunch';}).length;
+  var fo=leads.filter(function(l){return l.flow==='foreign';}).length;
+  var other=leads.filter(function(l){return['buy','rent','mm2h','newlaunch','foreign'].indexOf(l.flow)===-1;}).length;
+  var bs={new:0,contacted:0,closed:0};leads.forEach(function(l){bs[l.status||'new']++;});
+  var anon=leads.filter(function(l){return isAnon(l);}).length,ident=leads.length-anon;
+  var lmap={};leads.forEach(function(l){if(l.lang)lmap[l.lang]=(lmap[l.lang]||0)+1;});
+  // Lead grade breakdown
+  var grades={A:0,B:0,C:0,D:0};leads.forEach(function(l){var g=calcLeadScore(l).grade;grades[g]++;});
+  ac.innerHTML=[
+    sBlock(t('sb_type'),[{l:t('sb_buy'),v:buy,c:'var(--g1)'},{l:t('sb_rent'),v:rent,c:'var(--g2)'},{l:t('sb_mm2h'),v:mm2h,c:'var(--gold)'},{l:'🏗️ 新楼盘',v:nl,c:'#f97316'},{l:'🌏 海外',v:fo,c:'#06b6d4'},{l:t('sb_other'),v:other,c:'var(--purple)'}]),
+    sBlock('🎯 线索等级',[{l:'🥇 A级 高价值',v:grades.A,c:'var(--g1)'},{l:'🥈 B级 优质',v:grades.B,c:'var(--g2)'},{l:'🥉 C级 一般',v:grades.C,c:'var(--gold)'},{l:'❄️ D级 冷线索',v:grades.D,c:'var(--red)'}]),
+    sBlock(t('sb_status'),[{l:t('sb_new'),v:bs.new,c:'var(--g1)'},{l:t('sb_cont'),v:bs.contacted,c:'var(--g2)'},{l:t('sb_closed'),v:bs.closed,c:'var(--gold)'}]),
+    sBlock(t('sb_anon'),[{l:t('sb_identified'),v:ident,c:'var(--g1)'},{l:t('sb_anon_l'),v:anon,c:'var(--red)'}]),
+    sBlock(t('sb_lang'),Object.keys(lmap).map(function(k){return{l:{zh:'中文',en:'English',ms:'BM'}[k]||k,v:lmap[k],c:'var(--purple)'};}).sort(function(a,b){return b.v-a.v;}))
+  ].join('');
+}
+function sBlock(title,items){
+  var mx=Math.max.apply(null,[1].concat(items.map(function(i){return i.v;})));
+  return'<div class="a-block"><div class="a-title">'+title+'</div>'+items.map(function(it){var pct=Math.round(it.v/mx*100);return'<div class="bar-row"><div class="br-top"><span>'+it.l+'</span><span class="br-count" style="color:'+it.c+'">'+it.v+'</span></div><div class="bar-track"><div class="bar-fill" style="width:'+pct+'%;background:'+it.c+'"></div></div></div>';}).join('')+'</div>';
+}
+
+// ═══════════════════════════════════════════════════════
+// VISITORS VIEW
+// ═══════════════════════════════════════════════════════
+function renderVisitors(){
+  var vc=document.getElementById('visitors-content');if(!vc)return;
+  var vm=buildVisitorMap(),vids=Object.keys(vm);
+  if(!vids.length){vc.innerHTML='<div class="empty-state"><div class="empty-icon">👻</div><div class="empty-text">'+t('no_data')+'</div></div>';return;}
+  vids.sort(function(a,b){var la=vm[a],lb=vm[b];return safeTime(lb[lb.length-1].time)-safeTime(la[la.length-1].time);});
+  vc.innerHTML=vids.map(function(vid){
+    var visits=vm[vid].sort(function(a,b){return safeTime(b.time)-safeTime(a.time);});
+    var lat=visits[0],dn=lat.customerName||lat.name||'',dp=lat.customerPhone||lat.phone||'';
+    var waUrl=dp?'https://wa.me/'+dp.replace(/\D/g,'')+'?text='+encodeURIComponent(getTpl(lat,lat.flow||'anon').msg):'';
+    return'<div class="vis-card">'
+      +'<div class="vis-head"><div>'+(dn?'<div class="vis-name">'+esc(dn)+'</div>':'<div class="vis-anon">👻 '+t('anon_lbl')+'</div>')+(dp?'<div class="vis-phone">📞 '+esc(dp)+'</div>':'')+'</div><span class="vis-visits">×'+visits.length+' '+t('visit_lbl')+'</span></div>'
+      +'<div class="vis-timeline">'+visits.slice(0,4).map(function(v){var ti=typeInfo(v.flow);return'<div class="vis-trow"><span>'+ti.emoji+' '+ti.label+'</span><span>'+fmtTime(v.time)+'</span></div>';}).join('')+(visits.length>4?'<div class="vis-trow" style="font-size:.62rem;color:var(--mu)">+ '+(visits.length-4)+' more…</div>':'')+'</div>'
+      +'<div style="font-size:.59rem;color:var(--mu);font-family:\'JetBrains Mono\',monospace;margin-bottom:8px;opacity:.4">…'+vid.slice(-16)+'</div>'
+      +(waUrl?'<a class="vis-wa-btn" href="'+waUrl+'" target="_blank">💬 WhatsApp</a>':'<div class="vis-wa-dis">'+t('no_phone')+'</div>')
+    +'</div>';
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// VIEWS
+// ═══════════════════════════════════════════════════════
+function showV(v){
+  ['leads','analytics','visitors','setup','operator'].forEach(function(id){var el=document.getElementById('v-'+id);if(el)el.classList.toggle('on',id===v);});
+  document.querySelectorAll('.ni').forEach(function(el,i){el.classList.toggle('on',['leads','analytics','visitors','setup','operator'].indexOf(v)===i);});
+  if(v==='analytics'){renderAnalytics();}
+  if(v==='visitors'){renderVisitors();}
+  if(v==='operator'){refreshOpPanel();}
+}
+
+// ═══════════════════════════════════════════════════════
+// OPERATOR CONSOLE
+// ═══════════════════════════════════════════════════════
+var _opStatus=localStorage.getItem('merlin_op_status')||'online';
+var _rexEnabled=localStorage.getItem('merlin_rex_enabled')!=='false';
+
+function setOpStatus(st,btn){
+  _opStatus=st;
+  localStorage.setItem('merlin_op_status',st);
+  localStorage.setItem('merlin_op_status_ts',Date.now());
+  document.querySelectorAll('#op-status-btns .op-status-btn').forEach(function(b){b.className='op-status-btn';});
+  if(btn){btn.className='op-status-btn active-'+st;}
+  var note=document.getElementById('op-status-note');
+  if(note){var msgs={online:'Rex 正在线上，访客可看到绿点',away:'Rex 暂时离开，Rex AI 继续回复',busy:'Rex 正在忙碌，Rex AI 继续处理',offline:'Rex 已下线，Rex AI 全权负责'};note.textContent=msgs[st]||'';}
+}
+
+function togGlobalRex(){
+  _rexEnabled=!_rexEnabled;
+  localStorage.setItem('merlin_rex_enabled',_rexEnabled);
+  var tog=document.getElementById('global-rex-tog');
+  var lbl=document.getElementById('global-rex-lbl');
+  var sub=document.getElementById('global-rex-sub');
+  if(tog)tog.classList.toggle('on',_rexEnabled);
+  if(lbl)lbl.textContent=_rexEnabled?'Rex AI 已开启':'Rex AI 已关闭 — 手动接管中';
+  if(sub)sub.textContent=_rexEnabled?'Rex 正在自动回复所有访客问题':'您正在手动控制所有对话';
+}
+
+function refreshOpPanel(){
+  // Rex status buttons
+  document.querySelectorAll('#op-status-btns .op-status-btn').forEach(function(b,i){
+    var sts=['online','away','busy','offline'];b.className='op-status-btn'+(sts[i]===_opStatus?' active-'+sts[i]:'');
+  });
+  // Rex toggle
+  var tog=document.getElementById('global-rex-tog');
+  var lbl=document.getElementById('global-rex-lbl');
+  var sub=document.getElementById('global-rex-sub');
+  if(tog)tog.classList.toggle('on',_rexEnabled);
+  if(lbl)lbl.textContent=_rexEnabled?'Rex AI 已开启':'Rex AI 已关闭 — 手动接管中';
+  if(sub)sub.textContent=_rexEnabled?'Rex 正在自动回复所有访客问题':'您正在手动控制所有对话';
+
+  // Active sessions list (recent 30min leads)
+  var sl=document.getElementById('op-sessions-list');
+  if(sl){
+    var now=Date.now();
+    var recent=leads.filter(function(l){return (now-safeTime(l.time))<1800000;}).sort(function(a,b){return safeTime(b.time)-safeTime(a.time);});
+    if(!recent.length){sl.innerHTML='<div style="color:var(--mu);font-size:.75rem;text-align:center;padding:20px 0">暂无活跃访客（30分钟内）</div>';}
+    else{sl.innerHTML=recent.map(function(l){
+      var ti=typeInfo(l.flow),dn=l.customerName||l.name||'访客 #'+String(l.id).slice(-4);
+      var dp=l.customerPhone||l.phone||'';
+      var ls=calcLeadScore(l);
+      var waUrl=dp?'https://wa.me/'+dp.replace(/\D/g,'')+'?text='+encodeURIComponent(buildWAMsg(l)):'';
+      return'<div style="background:var(--s1);border:1px solid var(--bd);border-radius:9px;padding:11px 13px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
+        +'<div style="font-size:1.1rem">'+ti.emoji+'</div>'
+        +'<div style="flex:1;min-width:0">'
+          +'<div style="font-size:.78rem;font-weight:600;color:var(--tx)">'+esc(dn)+'</div>'
+          +'<div style="font-size:.66rem;color:var(--mu);font-family:\'JetBrains Mono\',monospace">'+ti.label+' · '+fmtTime(l.time)+'</div>'
+        +'</div>'
+        +'<span class="score-badge score-'+ls.grade+'">'+ls.grade+ls.score+'</span>'
+        +(waUrl?'<a href="'+waUrl+'" target="_blank" style="background:rgba(0,255,135,.1);color:var(--g1);border:1px solid rgba(0,255,135,.25);padding:4px 10px;border-radius:20px;font-size:.66rem;font-weight:600;text-decoration:none">💬 WA</a>':'')
+        +'<button onclick="scrollToLead(\''+l.id+'\')" style="background:rgba(0,212,255,.1);color:var(--g2);border:1px solid rgba(0,212,255,.25);padding:4px 10px;border-radius:20px;font-size:.66rem;font-weight:600;cursor:pointer">📋 查看</button>'
+      +'</div>';
+    }).join('');}
+  }
+
+  // Hot leads quick action
+  var hl=document.getElementById('op-hot-leads-list');
+  if(hl){
+    var hot=leads.filter(function(l){var s=calcLeadScore(l);return s.grade==='A'||s.grade==='B';}).sort(function(a,b){return calcLeadScore(b).score-calcLeadScore(a).score;}).slice(0,6);
+    if(!hot.length){hl.innerHTML='<div style="color:var(--mu);font-size:.75rem;text-align:center;padding:20px 0">暂无高分线索</div>';}
+    else{hl.innerHTML=hot.map(function(l){
+      var dn=l.customerName||l.name||'访客#'+String(l.id).slice(-4);
+      var dp=l.customerPhone||l.phone||'';
+      var ls=calcLeadScore(l);
+      var ti=typeInfo(l.flow);
+      var waUrl=dp?'https://wa.me/'+dp.replace(/\D/g,'')+'?text='+encodeURIComponent(buildWAMsg(l)):'';
+      return'<div style="background:var(--s1);border:1px solid var(--bd);border-radius:9px;padding:10px 13px;display:flex;align-items:center;gap:9px;flex-wrap:wrap">'
+        +'<span class="score-badge score-'+ls.grade+'" style="font-size:.72rem">'+ls.grade+' '+ls.score+'</span>'
+        +'<div style="flex:1;min-width:0"><div style="font-size:.77rem;font-weight:600;color:var(--tx)">'+esc(dn)+'</div>'
+        +'<div style="font-size:.64rem;color:var(--mu)">'+ti.emoji+' '+ti.label+(dp?' · 📞 '+esc(dp):'')+'</div></div>'
+        +(waUrl?'<a href="'+waUrl+'" target="_blank" style="background:rgba(0,255,135,.1);color:var(--g1);border:1px solid rgba(0,255,135,.25);padding:4px 10px;border-radius:20px;font-size:.66rem;font-weight:600;text-decoration:none">💬 WA</a>':'<span style="font-size:.64rem;color:var(--mu);padding:4px 8px">无电话</span>')
+        +'<button onclick="scrollToLead(\''+l.id+'\')" style="background:var(--s2);color:var(--mu2);border:1px solid var(--bd);padding:4px 9px;border-radius:20px;font-size:.64rem;cursor:pointer">详情</button>'
+      +'</div>';
+    }).join('');}
+  }
+}
+
+function sendBroadcast(){
+  var msg=(document.getElementById('broadcast-msg').value||'').trim();
+  if(!msg){alert('请输入广播消息');return;}
+  // Save to localStorage as a broadcast flag for index.html to pick up
+  try{
+    localStorage.setItem('merlin_broadcast',JSON.stringify({msg:msg,ts:Date.now(),from:'rex'}));
+    toast('📢 广播已发送（'+msg.slice(0,20)+'…）');
+    document.getElementById('broadcast-msg').value='';
+  }catch(e){alert('广播失败');}
+}
+
+// ═══════════════════════════════════════════════════════
+// EXPORT / CLEAR / UTIL
+// ═══════════════════════════════════════════════════════
+function exportCSV(){
+  if(!leads.length){alert(t('no_data'));return;}
+  var lm={zh:'CN',en:'English',ms:'BM'};
+  var rows=[t('csv_h')];
+  leads.forEach(function(l){rows.push([String(l.id).slice(-6),new Date(safeTime(l.time)||Date.now()).toLocaleString(),typeInfo(l.flow).label,'"'+(l.customerName||l.name||'').replace(/"/g,'""')+'"','"'+(l.customerPhone||l.phone||'').replace(/"/g,'""')+'"','"'+(l.visitorId||'').slice(-16)+'"',getVisitCount(l),lm[l.lang]||l.lang||'','"'+buildSummary(l).replace(/"/g,'""')+'"',l.status||'new','"'+(notes[l.id]||'').replace(/"/g,'""')+'"','"'+(aiSummaries[l.id]||'').replace(/"/g,'""')+'"']);});
+  var csv=rows.map(function(r){return r.join(',');}).join('\n');
+  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));a.download='merlin_leads_'+new Date().toISOString().slice(0,10)+'.csv';a.click();toast(t('exp_t'));
+}
+function clearAll(){if(!confirm(t('clr_c')))return;leads=[];notes={};aiSummaries={};aiReplies={};openId=null;saveLS();document.getElementById('demo-bar').style.display='none';render();toast(t('clr_t'));}
+function refresh(){loadLS();render();toast(t('ref_t'));}
+function toast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');setTimeout(function(){el.classList.remove('show');},2600);}
+
+// Poll localStorage every 5s
+setInterval(function(){
+  try{var r=localStorage.getItem('merlin_crm_leads');if(!r)return;var ls=JSON.parse(r);var changed=false;ls.forEach(function(ll){if(!ll.id&&!ll.sessionId)return;var idx=leads.findIndex(function(l){return l.sessionId===ll.sessionId||l.id===ll.id;});if(idx<0){leads.push(ll);changed=true;}});if(changed){render();toast(t('new_t'));}}catch(e){}
+},5000);
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+loadLS();
+document.getElementById('wa-num').value=localStorage.getItem('merlin_wa_num')||'';
+if(waAuto)document.getElementById('wa-tog').classList.add('on');
+document.querySelectorAll('.lb').forEach(function(b,i){b.classList.toggle('on',['zh','en','ms'][i]===lang);});
+applyLang();render();
+
+// ═══════════════════════════════════════════════════════
+// FIREBASE
+// ═══════════════════════════════════════════════════════
+var FB_CFG={apiKey:'AIzaSyC2xKpugmd21kn8nByD45MEyiU2unvVyAM',authDomain:'merlin-crm-2.firebaseapp.com',projectId:'merlin-crm-2',storageBucket:'merlin-crm-2.firebasestorage.app',messagingSenderId:'59780581612',appId:'1:59780581612:web:209f1dc379320cc76dfdc9'};
+function initFB(){
+  try{
+    if(!firebase.apps||!firebase.apps.length)firebase.initializeApp(FB_CFG);
+    var db=firebase.firestore();
+    db.collection('merlin_leads').onSnapshot(function(snap){
+      snap.forEach(function(doc){
+        var d=doc.data();d.id=d.id||doc.id;d.sessionId=d.sessionId||doc.id;if(!d.status)d.status='new';
+        if(!d.time){var ts=d.completedAt||d.updatedAt;d.time=(ts&&ts.seconds)?new Date(ts.seconds*1000).toISOString():ts?String(ts):new Date().toISOString();}
+        var idx=leads.findIndex(function(l){return l.sessionId===d.sessionId||l.id===d.id;});
+        if(idx>=0)leads[idx]=Object.assign(leads[idx],d);
+        else{leads.push(d);if(waAuto&&localStorage.getItem('merlin_wa_num')){toast(t('new_t'));showPopup(d);}}
+      });
+      document.getElementById('last-upd').textContent=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+      render();updateStats();
+    },function(err){toast('⚠️ Firebase: '+(err.code||err.message));});
+  }catch(e){console.error('Firebase:',e);}
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initFB);else initFB();
+</script>
+</body>
+</html>
