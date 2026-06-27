@@ -1,0 +1,2959 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Merlin WA CRM v5 · Rex Yap Sabah Realty</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>
+:root{
+  --bg:#05060a;--s1:#0c0e14;--s2:#12151e;--s3:#181c28;
+  --bd:rgba(255,255,255,.06);--bd2:rgba(255,255,255,.12);
+  --tx:#e8edf5;--mu:#4a5568;--mu2:#6b7a99;
+  --g1:#00ff87;--g2:#00d4ff;--gold:#f5a623;--red:#ff4d6d;
+  --purple:#a855f7;--wa:#25d366;--wa2:#128c7e;
+  --r:10px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden}
+/* noise overlay removed */
+
+/* ── SIDEBAR ── */
+.sb{position:fixed;top:32px;left:0;bottom:0;width:220px;background:var(--s1);border-right:1px solid var(--bd);display:flex;flex-direction:column;z-index:1000;transition:width .2s;isolation:isolate}
+.logo-area{padding:18px 16px 14px;border-bottom:1px solid var(--bd)}
+.lm{display:flex;align-items:center;gap:9px;margin-bottom:3px}
+.lm-icon{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--wa),var(--wa2));display:flex;align-items:center;justify-content:center;font-size:1.1rem;box-shadow:0 0 16px rgba(37,211,102,.3);flex-shrink:0}
+.lm-name{font-size:.93rem;font-weight:700;letter-spacing:-.02em;background:linear-gradient(90deg,var(--wa),var(--g2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lm-sub{font-family:'JetBrains Mono',monospace;font-size:.53rem;color:var(--mu);letter-spacing:.08em;text-transform:uppercase}
+.nav-sec{padding:10px 8px;flex:1;overflow-y:auto}
+.nav-lbl{font-size:.51rem;color:var(--mu);letter-spacing:.14em;text-transform:uppercase;font-family:'JetBrains Mono',monospace;padding:10px 10px 4px}
+.ni{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;font-size:.8rem;font-weight:500;color:var(--mu2);cursor:pointer;transition:all .18s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;position:relative;z-index:auto}
+.ni:hover{background:var(--s2);color:var(--tx)}
+.ni.on{background:rgba(37,211,102,.07);color:var(--wa);font-weight:600}
+.ni.on::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:60%;border-radius:2px;background:var(--wa)}
+.ni-icon{width:18px;text-align:center;font-size:.88rem;flex-shrink:0}
+.ni-badge{margin-left:auto;background:var(--wa);color:#000;font-size:.55rem;font-weight:700;padding:1px 6px;border-radius:20px;font-family:'JetBrains Mono',monospace}
+.sb-footer{padding:12px 16px;border-top:1px solid var(--bd)}
+.live-ind{display:flex;align-items:center;gap:7px;font-family:'JetBrains Mono',monospace;font-size:.59rem;color:var(--mu2)}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--wa);box-shadow:0 0 8px var(--wa);animation:beat 2s infinite;flex-shrink:0}
+.sb-ver{font-family:'JetBrains Mono',monospace;font-size:.52rem;color:var(--mu);margin-top:3px}
+
+/* ── SERVER STATUS BAR ── */
+#srv-bar{position:fixed;top:0;left:220px;right:0;height:32px;z-index:900;display:flex;align-items:center;gap:10px;padding:0 20px;font-family:'JetBrains Mono',monospace;font-size:.62rem;border-bottom:1px solid var(--bd);background:var(--s1);transition:background .3s}
+#srv-bar.connected{background:rgba(37,211,102,.06);border-color:rgba(37,211,102,.2)}
+#srv-bar.error{background:rgba(255,77,109,.05);border-color:rgba(255,77,109,.2)}
+#srv-bar.warning{background:rgba(245,166,35,.05);border-color:rgba(245,166,35,.2)}
+.srv-dot{width:7px;height:7px;border-radius:50%;background:var(--mu);flex-shrink:0}
+.srv-dot.on{background:var(--wa);box-shadow:0 0 7px var(--wa);animation:beat 2s infinite}
+.srv-dot.err{background:var(--red)}
+.srv-dot.warn{background:var(--gold)}
+#srv-msg{color:var(--mu2);flex:1}
+.srv-actions{display:flex;gap:6px}
+.srv-btn{padding:2px 9px;border-radius:4px;font-size:.6rem;font-weight:700;cursor:pointer;border:1px solid var(--bd);background:var(--s2);color:var(--mu2);font-family:'JetBrains Mono',monospace;transition:all .18s}
+.srv-btn:hover{color:var(--tx);border-color:var(--bd2)}
+.srv-btn.primary{background:rgba(37,211,102,.12);color:var(--wa);border-color:rgba(37,211,102,.3)}
+@media(max-width:960px){#srv-bar{left:180px}}
+@media(max-width:640px){#srv-bar{left:0;pointer-events:none}}
+@media(max-width:640px){#srv-bar>*{pointer-events:auto}}
+
+/* ── QR MODAL ── */
+#qr-modal .modal{max-width:360px;text-align:center}
+#qr-img{width:240px;height:240px;margin:10px auto;display:block;border-radius:12px;background:var(--s2)}
+.qr-steps{text-align:left;font-size:.74rem;color:var(--mu2);line-height:2;padding:0 4px}
+
+/* ── REAL SEND INDICATOR ── */
+.real-send-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:.6rem;font-weight:700;font-family:'JetBrains Mono',monospace;background:rgba(37,211,102,.12);color:var(--wa);border:1px solid rgba(37,211,102,.3)}
+.real-send-badge.sim{background:rgba(245,166,35,.1);color:var(--gold);border-color:rgba(245,166,35,.3)}
+@keyframes beat{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.3);opacity:.6}}
+
+/* ── MAIN ── */
+.main{margin-left:220px;margin-top:32px;min-height:100vh;position:relative}
+.view{display:none;padding:28px 34px}
+.view.on{display:block;animation:fadeUp .25s ease}
+.view.on{display:block}
+@keyframes fadeUp{from{opacity:0}to{opacity:1}}
+
+
+/* ── TOPBAR ── */
+.topbar{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;gap:12px}
+.tb-left .page-title{font-size:1.65rem;font-weight:700;letter-spacing:-.03em;line-height:1.1}
+.tb-left .page-title em{font-style:normal;background:linear-gradient(90deg,var(--wa),var(--g2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.tb-left .page-sub{font-size:.71rem;color:var(--mu2);margin-top:4px;font-family:'JetBrains Mono',monospace}
+.tb-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0}
+
+/* ── BTNS ── */
+.btn{padding:7px 14px;border-radius:8px;font-size:.77rem;font-weight:600;cursor:pointer;border:none;font-family:'Space Grotesk',sans-serif;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn-ghost{background:var(--s2);color:var(--mu2);border:1px solid var(--bd)}
+.btn-ghost:hover{color:var(--tx);border-color:var(--bd2)}
+.btn-wa{background:linear-gradient(135deg,var(--wa),var(--wa2));color:#fff;font-weight:700;box-shadow:0 4px 18px rgba(37,211,102,.22)}
+.btn-wa:hover{transform:translateY(-1px);box-shadow:0 6px 26px rgba(37,211,102,.34)}
+.btn-purple{background:linear-gradient(135deg,var(--purple),#c084fc);color:#fff;font-weight:700}
+.btn-purple:hover{transform:translateY(-1px)}
+.btn-red{background:rgba(255,77,109,.15);color:var(--red);border:1px solid rgba(255,77,109,.3)}
+.btn-red:hover{background:rgba(255,77,109,.25)}
+.btn-sm{padding:4px 10px;font-size:.7rem}
+
+/* ── STAT CARDS ── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.stat-card{background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:13px 15px;position:relative;overflow:hidden;transition:border .2s}
+.stat-card:hover{border-color:var(--bd2)}
+.stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.c-wa::after{background:linear-gradient(90deg,var(--wa),var(--g2))}
+.c-pu::after{background:linear-gradient(90deg,var(--purple),#c084fc)}
+.c-gold::after{background:linear-gradient(90deg,var(--gold),#f7c948)}
+.c-r::after{background:linear-gradient(90deg,var(--red),#ff8fa3)}
+.c-g::after{background:linear-gradient(90deg,var(--g1),var(--g2))}
+.sc-label{font-size:.57rem;color:var(--mu2);text-transform:uppercase;letter-spacing:.1em;font-family:'JetBrains Mono',monospace;margin-bottom:5px}
+.sc-num{font-family:'JetBrains Mono',monospace;font-size:1.6rem;font-weight:500;line-height:1;letter-spacing:-.04em}
+.c-wa .sc-num{color:var(--wa)}.c-pu .sc-num{color:var(--purple)}.c-gold .sc-num{color:var(--gold)}.c-r .sc-num{color:var(--red)}.c-g .sc-num{color:var(--g1)}
+.sc-sub{font-size:.59rem;color:var(--mu);margin-top:4px}
+
+/* ── PANEL ── */
+.panel{background:var(--s1);border:1px solid var(--bd);border-radius:14px;margin-bottom:14px;overflow:hidden}
+.panel-head{padding:13px 17px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.panel-title{font-size:.86rem;font-weight:700;display:flex;align-items:center;gap:8px}
+.panel-body{padding:17px}
+
+/* ── TOGGLE ── */
+.tog-wrap{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+.tog-track{width:40px;height:22px;background:var(--s3);border-radius:11px;border:1px solid var(--bd2);position:relative;transition:all .25s}
+.tog-track.on{background:rgba(37,211,102,.2);border-color:var(--wa)}
+.tog-knob{width:16px;height:16px;border-radius:50%;background:var(--mu);position:absolute;top:2px;left:2px;transition:all .25s}
+.tog-track.on .tog-knob{left:20px;background:var(--wa);box-shadow:0 0 8px rgba(37,211,102,.5)}
+.tog-lbl{font-size:.8rem;font-weight:600;color:var(--mu2)}
+.tog-track.on+.tog-lbl{color:var(--wa)}
+/* small toggle */
+.tog-sm .tog-track{width:32px;height:17px;border-radius:9px}
+.tog-sm .tog-knob{width:11px;height:11px;top:2px;left:2px}
+.tog-sm .tog-track.on .tog-knob{left:17px}
+
+/* ── FORM ── */
+.form-group{margin-bottom:12px}
+.form-label{font-size:.65rem;color:var(--mu2);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;display:block}
+.form-inp{width:100%;background:var(--s2);border:1px solid var(--bd2);border-radius:8px;padding:8px 12px;font-size:.82rem;color:var(--tx);outline:none;font-family:'Space Grotesk',sans-serif;transition:border .2s}
+.form-inp:focus{border-color:rgba(37,211,102,.4)}
+textarea.form-inp{min-height:100px;resize:vertical;font-family:'JetBrains Mono',monospace;font-size:.77rem;line-height:1.6}
+select.form-inp{cursor:pointer}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.var-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.var-chip{padding:3px 9px;border-radius:5px;font-size:.65rem;font-family:'JetBrains Mono',monospace;background:rgba(0,212,255,.1);color:var(--g2);border:1px solid rgba(0,212,255,.2);cursor:pointer;transition:all .15s}
+.var-chip:hover{background:rgba(0,212,255,.2)}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-overlay.show{opacity:1;pointer-events:all}
+.modal{background:var(--s1);border:1px solid var(--bd2);border-radius:16px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;animation:fadeUp .22s ease}
+.modal-head{padding:17px 20px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center}
+.modal-title{font-size:.95rem;font-weight:700}
+.modal-close{background:var(--s2);border:1px solid var(--bd);color:var(--mu2);width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;transition:all .18s}
+.modal-close:hover{color:var(--tx);border-color:var(--bd2)}
+.modal-body{padding:20px}
+.modal-footer{padding:13px 20px;border-top:1px solid var(--bd);display:flex;justify-content:flex-end;gap:8px}
+
+/* ── CONVERSATION LIST ── */
+.chat-layout{display:grid;grid-template-columns:320px 1fr;gap:14px}
+.conv-list{display:flex;flex-direction:column;gap:6px;max-height:600px;overflow-y:auto}
+.conv-item{background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:11px 13px;cursor:pointer;transition:all .2s;position:relative}
+.conv-item:hover{border-color:var(--bd2);background:var(--s3)}
+.conv-item.active{border-color:rgba(37,211,102,.35);background:rgba(37,211,102,.04)}
+.conv-item.unread::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--wa);border-radius:3px 0 0 3px}
+.conv-top{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.conv-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--wa),var(--wa2));display:flex;align-items:center;justify-content:center;font-size:.82rem;font-weight:700;color:#fff;flex-shrink:0}
+.conv-name{font-size:.8rem;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.conv-time{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--mu);flex-shrink:0}
+.conv-preview{font-size:.73rem;color:var(--mu2);line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.conv-meta{display:flex;gap:4px;margin-top:5px;flex-wrap:wrap}
+.chip{font-size:.56rem;padding:2px 6px;border-radius:20px;font-family:'JetBrains Mono',monospace;font-weight:700;border:1px solid}
+.chip-wa{background:rgba(37,211,102,.1);color:var(--wa);border-color:rgba(37,211,102,.25)}
+.chip-auto{background:rgba(168,85,247,.1);color:var(--purple);border-color:rgba(168,85,247,.25)}
+.chip-human{background:rgba(245,166,35,.1);color:var(--gold);border-color:rgba(245,166,35,.25)}
+.chip-new{background:rgba(255,77,109,.1);color:var(--red);border-color:rgba(255,77,109,.25)}
+.chip-done{background:rgba(0,255,135,.07);color:var(--g1);border-color:rgba(0,255,135,.2)}
+
+/* ── CHAT WINDOW ── */
+.chat-window{background:var(--s1);border:1px solid var(--bd);border-radius:14px;display:flex;flex-direction:column;height:640px;overflow:hidden}
+.chat-header{padding:13px 15px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:10px}
+.chat-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--wa),var(--wa2));display:flex;align-items:center;justify-content:center;font-size:.95rem;font-weight:700;color:#fff;flex-shrink:0}
+.chat-name{font-size:.86rem;font-weight:700}
+.chat-status{font-size:.63rem;color:var(--mu2);margin-top:1px;font-family:'JetBrains Mono',monospace}
+.chat-status.online{color:var(--wa)}
+.chat-actions{margin-left:auto;display:flex;gap:6px}
+.icon-btn{background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:5px 9px;cursor:pointer;font-size:.73rem;color:var(--mu2);transition:all .18s}
+.icon-btn:hover{color:var(--tx);border-color:var(--bd2)}
+.mode-bar{padding:7px 15px;border-bottom:1px solid var(--bd);display:flex;gap:6px;align-items:center}
+.mode-pill{font-size:.62rem;padding:3px 9px;border-radius:20px;cursor:pointer;border:1px solid var(--bd);color:var(--mu2);background:none;font-family:'Space Grotesk',sans-serif;font-weight:600;transition:all .18s}
+.mode-pill.on.ai{background:rgba(168,85,247,.12);color:var(--purple);border-color:rgba(168,85,247,.3)}
+.mode-pill.on.human{background:rgba(245,166,35,.1);color:var(--gold);border-color:rgba(245,166,35,.3)}
+.mode-note{font-size:.61rem;color:var(--mu);font-family:'JetBrains Mono',monospace;margin-left:auto}
+.chat-messages{flex:1;overflow-y:auto;padding:15px;display:flex;flex-direction:column;gap:9px}
+.msg-row{display:flex;gap:8px}
+.msg-row.out{flex-direction:row-reverse}
+.msg-bubble{max-width:78%;padding:9px 13px;border-radius:14px;font-size:.79rem;line-height:1.55;position:relative}
+.msg-bubble.in{background:var(--s2);border:1px solid var(--bd);border-bottom-left-radius:4px}
+.msg-bubble.out{background:linear-gradient(135deg,rgba(37,211,102,.18),rgba(18,140,126,.12));border:1px solid rgba(37,211,102,.25);border-bottom-right-radius:4px}
+.msg-bubble.auto-msg{background:linear-gradient(135deg,rgba(168,85,247,.12),rgba(37,211,102,.06));border:1px solid rgba(168,85,247,.2)}
+.msg-meta{font-size:.57rem;color:var(--mu);margin-top:4px;display:flex;align-items:center;gap:4px}
+.msg-meta.out{justify-content:flex-end}
+.msg-av{width:24px;height:24px;border-radius:50%;font-size:.65rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.msg-av.user{background:linear-gradient(135deg,var(--wa),var(--wa2));color:#fff}
+.msg-av.bot{background:linear-gradient(135deg,var(--purple),var(--g1));color:#fff}
+.msg-av.agent{background:linear-gradient(135deg,var(--gold),#f7c948);color:#000}
+.chat-input-bar{padding:11px 14px;border-top:1px solid var(--bd);display:flex;gap:8px;align-items:flex-end}
+.chat-inp{flex:1;background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:9px 12px;font-size:.79rem;color:var(--tx);outline:none;resize:none;font-family:'Space Grotesk',sans-serif;line-height:1.5;max-height:100px;transition:border .2s}
+.chat-inp:focus{border-color:rgba(37,211,102,.4)}
+.chat-inp::placeholder{color:var(--mu)}
+.send-btn{background:linear-gradient(135deg,var(--wa),var(--wa2));border:none;border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;flex-shrink:0}
+.send-btn:hover{transform:scale(1.05);box-shadow:0 4px 14px rgba(37,211,102,.35)}
+.ai-gen-area{padding:8px 13px;border-top:1px solid var(--bd)}
+.ai-gen-box{background:linear-gradient(135deg,rgba(168,85,247,.07),rgba(37,211,102,.04));border:1px solid rgba(168,85,247,.2);border-radius:11px;padding:12px 14px}
+.ai-gen-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.ai-gen-icon{width:24px;height:24px;border-radius:6px;background:linear-gradient(135deg,var(--purple),var(--g1));display:flex;align-items:center;justify-content:center;font-size:.72rem}
+.ai-gen-lbl{font-size:.7rem;font-weight:700;color:var(--purple);font-family:'JetBrains Mono',monospace}
+.ai-suggestion{font-family:'JetBrains Mono',monospace;font-size:.73rem;line-height:1.6;color:var(--mu2);background:rgba(0,0,0,.2);border-radius:7px;padding:9px 11px;min-height:50px;margin-bottom:8px}
+.ai-loading{display:inline-flex;gap:3px;align-items:center}
+.ai-dot{width:5px;height:5px;border-radius:50%;background:var(--purple);animation:pulse 1.4s infinite}
+.ai-dot:nth-child(2){animation-delay:.2s}.ai-dot:nth-child(3){animation-delay:.4s}
+@keyframes pulse{0%,80%,100%{transform:scale(.7);opacity:.5}40%{transform:scale(1);opacity:1}}
+
+/* ── QUEUE ── */
+.q-list{display:flex;flex-direction:column;gap:8px}
+.q-card{background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:12px}
+.q-card:hover{border-color:var(--bd2)}
+.q-av{width:36px;height:36px;border-radius:9px;background:rgba(37,211,102,.1);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.q-body{flex:1;min-width:0}
+.q-name{font-size:.81rem;font-weight:600;margin-bottom:2px}
+.q-meta{font-size:.68rem;color:var(--mu2);font-family:'JetBrains Mono',monospace}
+.q-prev{font-size:.69rem;color:var(--mu2);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.q-acts{display:flex;gap:5px;flex-shrink:0}
+.q-send{background:linear-gradient(135deg,var(--wa),var(--wa2));color:#fff;border:none;border-radius:7px;padding:6px 11px;font-size:.71rem;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:5px;transition:opacity .2s;font-family:'Space Grotesk',sans-serif}
+.q-send:hover{opacity:.85}
+.q-skip{background:var(--s3);border:1px solid var(--bd);color:var(--mu);border-radius:7px;padding:6px 10px;font-size:.69rem;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:all .18s}
+.q-skip:hover{color:var(--red);border-color:rgba(255,77,109,.3)}
+
+/* ── LOG TABLE ── */
+.log-tbl{width:100%;border-collapse:collapse}
+.log-tbl th{font-size:.61rem;color:var(--mu);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;padding:8px 12px;text-align:left;border-bottom:1px solid var(--bd)}
+.log-tbl td{font-size:.77rem;padding:10px 12px;border-bottom:1px solid var(--bd);vertical-align:top}
+.log-tbl tr:last-child td{border-bottom:none}
+.log-tbl tr:hover td{background:rgba(255,255,255,.02)}
+.ls{font-size:.61rem;padding:2px 7px;border-radius:20px;font-family:'JetBrains Mono',monospace;font-weight:700}
+.ls-sent{background:rgba(37,211,102,.1);color:var(--wa)}
+.ls-queued{background:rgba(245,166,35,.1);color:var(--gold)}
+.ls-failed{background:rgba(255,77,109,.1);color:var(--red)}
+.ls-skipped{background:rgba(107,122,153,.15);color:var(--mu2)}
+
+/* ── RULE CARDS ── */
+.rule-list{display:flex;flex-direction:column;gap:8px}
+.rule-card{background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:13px 15px;display:flex;align-items:flex-start;gap:12px;transition:border .2s}
+.rule-card:hover{border-color:var(--bd2)}
+.rule-card.active{border-color:rgba(37,211,102,.3);background:rgba(37,211,102,.03)}
+.rule-card.disabled{opacity:.45}
+.rule-left{flex:1;min-width:0}
+.rule-name{font-size:.82rem;font-weight:700;margin-bottom:3px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.rule-trigger{font-size:.71rem;color:var(--mu2);margin-bottom:5px;line-height:1.5}
+.rule-msg-pre{font-size:.7rem;color:var(--g2);font-family:'JetBrains Mono',monospace;line-height:1.55;background:rgba(0,0,0,.3);border-radius:7px;padding:8px 10px;margin-top:5px;white-space:pre-wrap;word-break:break-word;max-height:80px;overflow-y:auto;border:1px solid var(--bd)}
+.rule-actions{display:flex;flex-direction:column;gap:5px;flex-shrink:0}
+.rb{font-size:.54rem;padding:2px 7px;border-radius:20px;font-weight:700;text-transform:uppercase;font-family:'JetBrains Mono',monospace}
+.rb-buy{background:rgba(0,255,135,.1);color:var(--g1)}.rb-rent{background:rgba(0,212,255,.1);color:var(--g2)}.rb-mm2h{background:rgba(245,166,35,.1);color:var(--gold)}.rb-anon{background:rgba(255,77,109,.1);color:var(--red)}.rb-booking{background:rgba(167,139,250,.1);color:#a78bfa}.rb-return{background:rgba(168,85,247,.1);color:var(--purple)}.rb-all{background:rgba(37,211,102,.1);color:var(--wa)}
+.ic-btn{padding:4px 9px;border-radius:6px;font-size:.68rem;font-weight:600;cursor:pointer;border:1px solid var(--bd);background:var(--s3);color:var(--mu2);font-family:'Space Grotesk',sans-serif;transition:all .18s;white-space:nowrap}
+.ic-btn:hover{color:var(--tx);border-color:var(--bd2)}
+.ic-btn.edit{color:var(--g2);border-color:rgba(0,212,255,.25)}
+.ic-btn.del{color:var(--red);border-color:rgba(255,77,109,.2)}
+
+/* ── SETTINGS ── */
+.setting-row{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;padding:13px 0;border-bottom:1px solid var(--bd)}
+.setting-row:last-child{border-bottom:none}
+.setting-left{flex:1}
+.setting-title{font-size:.82rem;font-weight:600;margin-bottom:2px}
+.setting-desc{font-size:.71rem;color:var(--mu2);line-height:1.55}
+.setting-right{flex-shrink:0;display:flex;align-items:center}
+.code-block{background:rgba(0,0,0,.4);border:1px solid rgba(37,211,102,.18);border-radius:8px;padding:11px 13px;font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--g2);line-height:1.7;white-space:pre-wrap;word-break:break-all;margin-top:8px;position:relative}
+.copy-code-btn{position:absolute;top:7px;right:8px;padding:3px 9px;border-radius:5px;font-size:.63rem;font-weight:600;cursor:pointer;border:1px solid rgba(37,211,102,.25);background:rgba(37,211,102,.08);color:var(--wa);font-family:'Space Grotesk',sans-serif}
+.copy-code-btn:hover{background:rgba(37,211,102,.18)}
+.setup-step{background:var(--s2);border:1px solid var(--bd);border-radius:11px;padding:16px 18px;margin-bottom:12px}
+.setup-step h3{font-size:.86rem;font-weight:700;margin-bottom:7px}
+.setup-step p{font-size:.77rem;color:var(--mu2);line-height:1.65}
+.step-num{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--wa),var(--wa2));display:inline-flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:#000;flex-shrink:0;margin-right:7px}
+
+/* ── WA SIMULATOR ── */
+.wa-phone{background:#111b21;border-radius:14px;overflow:hidden;max-width:360px;border:1px solid rgba(37,211,102,.18);box-shadow:0 16px 50px rgba(0,0,0,.5)}
+.wa-phone-head{background:#1f2c33;padding:12px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.05)}
+.wa-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--wa),var(--wa2));display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.wa-cname{font-size:.84rem;font-weight:600;color:#e9edef}
+.wa-cstatus{font-size:.66rem;color:rgba(233,237,239,.5);font-family:'JetBrains Mono',monospace}
+.wa-msgs{background:#0b141a;padding:12px;min-height:220px;max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:7px}
+.wa-bub{max-width:82%;padding:8px 11px;border-radius:10px;font-size:.77rem;line-height:1.5;color:#e9edef;word-break:break-word}
+.wa-bub.out{background:#005c4b;align-self:flex-end;border-bottom-right-radius:3px}
+.wa-bub.in{background:#1f2c33;align-self:flex-start;border-bottom-left-radius:3px}
+.wa-bub-time{font-size:.58rem;opacity:.5;text-align:right;margin-top:3px;font-family:'JetBrains Mono',monospace}
+.wa-tick{color:var(--g2)}
+.wa-input-row{background:#1f2c33;padding:9px 13px;display:flex;align-items:center;gap:8px}
+.wa-inp-fake{flex:1;background:#2a3942;border-radius:20px;padding:7px 13px;font-size:.77rem;color:rgba(233,237,239,.35);font-style:italic}
+.wa-send-fake{width:34px;height:34px;border-radius:50%;background:var(--wa2);display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;font-size:.9rem}
+
+/* ── INFO/WARN BOXES ── */
+.info-box{background:rgba(37,211,102,.04);border:1px solid rgba(37,211,102,.14);border-radius:10px;padding:11px 14px;font-size:.77rem;color:var(--mu2);line-height:1.6;margin-bottom:13px}
+.info-box strong{color:var(--wa)}
+.warn-box{background:rgba(245,166,35,.04);border:1px solid rgba(245,166,35,.18);border-radius:10px;padding:11px 14px;font-size:.77rem;color:var(--mu2);line-height:1.6;margin-bottom:13px}
+.warn-box strong{color:var(--gold)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+
+/* ── SCHEDULE ── */
+.sched-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:10px}
+.day-pill{background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:8px 4px;text-align:center;cursor:pointer;transition:all .2s;font-size:.74rem}
+.day-pill.on{background:rgba(37,211,102,.12);border-color:rgba(37,211,102,.3);color:var(--wa)}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--s2);border:1px solid var(--bd2);color:var(--tx);padding:9px 20px;border-radius:30px;font-size:.79rem;font-weight:600;z-index:9000;transition:transform .3s;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+#toast.show{transform:translateX(-50%) translateY(0)}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:36px 20px;color:var(--mu)}
+.empty-icon{font-size:2rem;margin-bottom:8px;opacity:.5}
+.empty-txt{font-size:.8rem;color:var(--mu2)}
+
+/* ── SCROLL ── */
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--s3);border-radius:3px}::-webkit-scrollbar-thumb:hover{background:var(--mu)}
+
+/* ── STATS CHART ── */
+#daily-chart{height:140px;display:flex;align-items:flex-end;gap:5px;padding-bottom:6px}
+
+/* ── RESPONSIVE ── */
+@media(max-width:960px){
+  .sb{width:180px}.main{margin-left:180px}.view{padding:20px 18px}
+  .stats-row{grid-template-columns:1fr 1fr}.form-row{grid-template-columns:1fr}
+  .two-col{grid-template-columns:1fr}.chat-layout{grid-template-columns:1fr}
+}
+@media(max-width:640px){.sb{display:none}.main{margin-left:0}}
+</style>
+</head>
+<body>
+
+<!-- SERVER STATUS BAR -->
+<div id="srv-bar">
+  <div class="srv-dot" id="srv-dot"></div>
+  <span id="srv-msg">正在连接后端服务器…</span>
+  <span id="srv-wa-status" style="color:var(--mu);margin-left:4px"></span>
+  <div class="srv-actions">
+    <button class="srv-btn" onclick="showQR()" id="btn-show-qr" style="display:none">📱 扫码连接 WA</button>
+    <button class="srv-btn" onclick="pingServer()">🔄</button>
+    <button class="srv-btn" style="font-size:.58rem;color:var(--mu)" onclick="openSrvHelp()">后端未启动？</button>
+  </div>
+</div>
+
+<!-- QR MODAL -->
+<div class="modal-overlay" id="qr-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">📱 扫码连接 WhatsApp</div>
+      <button class="modal-close" onclick="closeModal('qr-modal')">✕</button>
+    </div>
+    <div class="modal-body" style="text-align:center">
+      <img id="qr-img" src="" alt="QR Code" style="display:none">
+      <div id="qr-loading" style="padding:40px;color:var(--mu2);font-size:.8rem">⏳ 正在获取二维码…</div>
+      <div id="qr-error" style="display:none;padding:20px;color:var(--red);font-size:.8rem"></div>
+      <div class="qr-steps" style="margin-top:12px">
+        <div>① 打开手机 WhatsApp</div>
+        <div>② 点击右上角「⋮」→「已连接的设备」</div>
+        <div>③ 点击「连接设备」扫描上方二维码</div>
+        <div>④ 扫码成功后状态栏变绿即可发消息 ✅</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="fetchQR()">🔄 刷新二维码</button>
+      <button class="btn btn-ghost" onclick="closeModal('qr-modal')">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- SETUP HELP MODAL -->
+<div class="modal-overlay" id="help-modal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-head"><div class="modal-title">🚀 如何启动后端服务器</div><button class="modal-close" onclick="closeModal('help-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="setup-step"><h3><span class="step-num">1</span>安装 Node.js</h3><p>前往 <strong>nodejs.org</strong> 下载安装（v18 或以上）</p></div>
+      <div class="setup-step"><h3><span class="step-num">2</span>安装依赖</h3>
+        <div class="code-block" id="help-code-1">npm install whatsapp-web.js qrcode-terminal qrcode express cors</div>
+        <button class="copy-code-btn" onclick="copyCode('help-code-1')">复制</button>
+      </div>
+      <div class="setup-step"><h3><span class="step-num">3</span>启动服务器</h3>
+        <div class="code-block" id="help-code-2">node server.js</div>
+        <button class="copy-code-btn" onclick="copyCode('help-code-2')">复制</button>
+        <p style="margin-top:8px;font-size:.75rem;color:var(--mu2)">首次运行会显示二维码，用手机 WhatsApp 扫码登录。</p>
+      </div>
+      <div class="setup-step"><h3><span class="step-num">4</span>回到此页面</h3><p>状态栏变绿后，队列中的消息会通过你的 WhatsApp 真实发送！</p></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-wa" onclick="closeModal('help-modal')">明白了</button></div>
+  </div>
+</div>
+<aside class="sb">
+  <div class="logo-area">
+    <div class="lm">
+      <div class="lm-icon">💬</div>
+      <div>
+        <div class="lm-name">WA CRM</div>
+      </div>
+    </div>
+    <div class="lm-sub">Merlin · Rex Yap Realty</div>
+  </div>
+  <nav class="nav-sec">
+    <div class="nav-lbl">仪表板</div>
+    <button class="ni on" onclick="showView('v-dashboard',this)"><span class="ni-icon">🏠</span> 总览</button>
+    <button class="ni" onclick="showView('v-conversations',this)"><span class="ni-icon">💬</span> 对话管理 <span class="ni-badge" id="nb-unread">0</span></button>
+    <button class="ni" onclick="showView('v-queue',this)"><span class="ni-icon">📬</span> 待发队列 <span class="ni-badge" id="nb-queue">0</span></button>
+    <button class="ni" onclick="showView('v-log',this)"><span class="ni-icon">📋</span> 发送记录</button>
+    <div class="nav-lbl">配置</div>
+    <button class="ni" onclick="showView('v-chatbot',this)"><span class="ni-icon">🤖</span> 聊天机器人构建器</button>
+    <button class="ni" onclick="showView('v-rules',this)"><span class="ni-icon">⚙️</span> 自动回复规则</button>
+    <button class="ni" onclick="showView('v-templates',this)"><span class="ni-icon">📝</span> 消息模板</button>
+    <button class="ni" onclick="showView('v-schedule',this)"><span class="ni-icon">🕐</span> 工作时间</button>
+    <button class="ni" onclick="showView('v-stats',this)"><span class="ni-icon">📊</span> 统计报表</button>
+    <button class="ni" onclick="showView('v-settings',this)"><span class="ni-icon">🔧</span> 设置</button>
+    <div class="nav-lbl">快捷</div>
+    <button class="ni" onclick="window.open('merlin-admin.html','_blank')"><span class="ni-icon">🎛️</span> CRM 后台</button>
+    <button class="ni" onclick="window.open('index.html','_blank')"><span class="ni-icon">🏡</span> 网站前台</button>
+  </nav>
+  <div class="sb-footer">
+    <div class="live-ind"><span class="live-dot"></span> 实时监控中</div>
+    <div class="sb-ver">Merlin WA CRM v5.0</div>
+    <div id="sb-send-mode" class="real-send-badge sim" style="margin-top:6px">⚙️ 模拟发送</div>
+  </div>
+</aside>
+
+<main class="main">
+
+<!-- ══ DASHBOARD ══ -->
+<div id="v-dashboard" class="view on">
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="page-title">WhatsApp <em>自动回复</em> CRM</div>
+      <div class="page-sub">对话管理 · 自动化规则 · AI 助手 · Rex Yap Sabah Realty</div>
+    </div>
+    <div class="tb-right">
+      <button class="btn btn-ghost" onclick="syncFromMerlin()">🔄 同步顾客</button>
+      <button class="btn btn-wa" onclick="showView('v-conversations',document.querySelectorAll('.ni')[1])">💬 查看对话</button>
+    </div>
+  </div>
+
+  <!-- Master Toggle -->
+  <div class="panel" style="border-color:rgba(37,211,102,.25);background:rgba(37,211,102,.03);margin-bottom:14px">
+    <div class="panel-body">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div>
+          <div style="font-size:.98rem;font-weight:700;margin-bottom:3px">🤖 自动回复总开关</div>
+          <div style="font-size:.75rem;color:var(--mu2)">开启后，顾客完成 Merlin 问卷将自动收到个性化 WhatsApp 消息</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div id="master-status" style="font-family:'JetBrains Mono',monospace;font-size:.73rem;color:var(--wa)">✅ 已启用</div>
+          <div class="tog-wrap" onclick="togMaster()">
+            <div class="tog-track on" id="master-tog"><div class="tog-knob"></div></div>
+            <span class="tog-lbl" id="master-lbl">自动回复开启</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card c-wa"><div class="sc-label">活跃对话</div><div class="sc-num" id="d-convs">0</div><div class="sc-sub">WhatsApp 顾客</div></div>
+    <div class="stat-card c-pu"><div class="sc-label">待发队列</div><div class="sc-num" id="d-pending">0</div><div class="sc-sub">等待发送</div></div>
+    <div class="stat-card c-gold"><div class="sc-label">今日发送</div><div class="sc-num" id="d-today">0</div><div class="sc-sub">条 WA 消息</div></div>
+    <div class="stat-card c-r"><div class="sc-label">未读消息</div><div class="sc-num" id="d-unread">0</div><div class="sc-sub">待处理</div></div>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">⚙️ 已启用规则</div>
+          <button class="btn btn-ghost" style="font-size:.69rem" onclick="showView('v-rules',null)">管理 →</button>
+        </div>
+        <div class="panel-body" id="dash-rules">
+          <div class="empty"><div class="empty-icon">⚙️</div><div class="empty-txt">加载中…</div></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">📋 最近发送记录</div>
+          <button class="btn btn-ghost" style="font-size:.69rem" onclick="showView('v-log',null)">查看全部 →</button>
+        </div>
+        <div class="panel-body" style="padding:0;overflow-x:auto">
+          <table class="log-tbl"><thead><tr><th>时间</th><th>顾客</th><th>类型</th><th>状态</th></tr></thead>
+          <tbody id="dash-log-body"><tr><td colspan="4" style="text-align:center;padding:20px;color:var(--mu)">暂无记录</td></tr></tbody></table>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">📱 消息预览</div>
+          <select id="sim-flow" class="form-inp" style="width:auto;font-size:.71rem;padding:4px 8px" onchange="updateSim()">
+            <option value="buy">🏠 买房询问</option>
+            <option value="rent">🔑 出租询问</option>
+            <option value="mm2h">📋 MM2H</option>
+            <option value="booking">📅 看房预约</option>
+            <option value="anon">👻 匿名访客</option>
+          </select>
+        </div>
+        <div class="panel-body" style="padding:14px">
+          <div class="wa-phone">
+            <div class="wa-phone-head">
+              <div class="wa-av">👤</div>
+              <div><div class="wa-cname" id="sim-name">陈小姐</div><div class="wa-cstatus" id="sim-phone">+60 11-1234 5678</div></div>
+            </div>
+            <div class="wa-msgs" id="sim-msgs">
+              <div class="wa-bub in">您好！我想了解三房公寓，预算 RM500–800k</div>
+              <div class="wa-bub out"><span id="sim-reply">加载中…</span><div class="wa-bub-time">刚刚 <span class="wa-tick">✓✓</span></div></div>
+            </div>
+            <div class="wa-input-row"><div class="wa-inp-fake">输入消息…</div><div class="wa-send-fake">➤</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 对话管理 ══ -->
+<div id="v-conversations" class="view">
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="page-title">WhatsApp <em>对话管理</em></div>
+      <div class="page-sub">实时对话 · AI/人工切换 · 顾客跟进</div>
+    </div>
+    <div class="tb-right">
+      <button class="btn btn-ghost" onclick="loadConvs()">🔄 刷新</button>
+      <button class="btn btn-ghost" onclick="genAIBroadcast()">✨ AI 广播</button>
+      <button class="btn btn-wa" onclick="newChat()">＋ 新对话</button>
+    </div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-card c-wa"><div class="sc-label">活跃对话</div><div class="sc-num" id="c-total">0</div><div class="sc-sub">今日</div></div>
+    <div class="stat-card c-g"><div class="sc-label">AI 回复</div><div class="sc-num" id="c-auto">0</div><div class="sc-sub">已发送消息</div></div>
+    <div class="stat-card c-gold"><div class="sc-label">人工接管</div><div class="sc-num" id="c-human">0</div><div class="sc-sub">对话数</div></div>
+    <div class="stat-card c-r"><div class="sc-label">未读</div><div class="sc-num" id="c-unread">0</div><div class="sc-sub">待处理</div></div>
+  </div>
+  <!-- Global AI toggle bar -->
+  <div style="background:rgba(37,211,102,.04);border:1px solid rgba(37,211,102,.14);border-radius:11px;padding:9px 14px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <span style="font-size:.63rem;color:var(--wa);font-weight:700;font-family:'JetBrains Mono',monospace">⚡ AI AUTO-REPLY</span>
+    <span style="font-size:.71rem;color:var(--mu2)">顾客发消息后 AI 自动秒回，24小时不间断</span>
+    <div class="tog-wrap tog-sm" onclick="togGlobalAI()" style="margin-left:auto">
+      <div class="tog-track on" id="global-ai-tog"><div class="tog-knob"></div></div>
+      <span class="tog-lbl" id="global-ai-lbl" style="font-size:.71rem">AI 已开启</span>
+    </div>
+  </div>
+  <div class="chat-layout">
+    <!-- Conv list -->
+    <div>
+      <div style="display:flex;gap:6px;margin-bottom:9px">
+        <input class="form-inp" style="flex:1;padding:7px 11px;font-size:.78rem" id="conv-search" placeholder="🔍 搜索顾客…" oninput="filterConvs()">
+        <select class="form-inp" style="width:auto;padding:7px 9px;font-size:.71rem" onchange="filterConvs()" id="conv-filter">
+          <option value="all">全部</option>
+          <option value="unread">未读</option>
+          <option value="ai">AI 回复中</option>
+          <option value="human">人工接管</option>
+        </select>
+      </div>
+      <div class="conv-list" id="conv-list">
+        <div class="empty"><div class="empty-icon">💬</div><div class="empty-txt">暂无对话<br><small style="font-size:.69rem">顾客从 WhatsApp 发消息后出现在这里</small></div></div>
+      </div>
+    </div>
+    <!-- Chat window -->
+    <div class="chat-window" id="chat-win">
+      <div id="chat-placeholder" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--mu);gap:10px">
+        <div style="font-size:2.2rem;opacity:.3">💬</div>
+        <div style="font-size:.8rem">选择左侧对话开始查看</div>
+      </div>
+      <div id="chat-ui" style="display:none;flex-direction:column;height:100%">
+        <div class="chat-header">
+          <div class="chat-avatar" id="chat-av">R</div>
+          <div><div class="chat-name" id="chat-cname">顾客</div><div class="chat-status online" id="chat-csub">—</div></div>
+          <div class="chat-actions">
+            <button class="icon-btn" onclick="openWA()" title="打开 WhatsApp">💬</button>
+            <button class="icon-btn" onclick="genAISuggestion()" title="AI 生成回复">✨</button>
+            <button class="icon-btn" onclick="addToQueueFromChat()" title="加入待发队列">📬</button>
+          </div>
+        </div>
+        <div class="mode-bar">
+          <button class="mode-pill on ai" id="mode-ai" onclick="setMode('ai')">🤖 AI 自动</button>
+          <button class="mode-pill" id="mode-human" onclick="setMode('human')">👤 人工接管</button>
+          <span class="mode-note" id="mode-note">AI 正在自动回复此对话</span>
+        </div>
+        <div class="chat-messages" id="chat-messages"></div>
+        <div id="ai-gen-area" class="ai-gen-area" style="display:none">
+          <div class="ai-gen-box">
+            <div class="ai-gen-row">
+              <div class="ai-gen-icon">✨</div>
+              <span class="ai-gen-lbl">AI 建议回复</span>
+              <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="document.getElementById('ai-gen-area').style.display='none'">×</button>
+            </div>
+            <div class="ai-suggestion" id="ai-suggestion">点击 ✨ 生成回复建议</div>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-wa btn-sm" onclick="sendAISuggestion()">📲 发送</button>
+              <button class="btn btn-ghost btn-sm" onclick="genAISuggestion()">🔄 重新生成</button>
+            </div>
+          </div>
+        </div>
+        <div class="chat-input-bar">
+          <textarea class="chat-inp" id="chat-inp" placeholder="输入消息… (Enter 发送)" rows="1" onkeydown="chatKey(event)" oninput="autoResize(this)"></textarea>
+          <button class="send-btn" onclick="sendMsg()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 待发队列 ══ -->
+<div id="v-queue" class="view">
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="page-title">📬 <em>待发队列</em></div>
+      <div class="page-sub">等待确认发送的 WhatsApp 消息</div>
+    </div>
+    <div class="tb-right">
+      <button class="btn btn-ghost" onclick="clearQueue()">🗑 清空队列</button>
+      <button class="btn btn-wa" onclick="sendAllQueue()">📤 全部发送</button>
+    </div>
+  </div>
+  <div class="info-box" id="queue-mode-info"><strong>📌 手动确认模式：</strong> 每条消息需点击确认后才通过 WhatsApp 发送，确保消息准确。可在设置中切换为"自动模式"。</div>
+  <div class="q-list" id="queue-list"><div class="empty"><div class="empty-icon">📭</div><div class="empty-txt">队列为空 · 等待新顾客询问…</div></div></div>
+</div>
+
+<!-- ══ 发送记录 ══ -->
+<div id="v-log" class="view">
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="page-title">📋 <em>发送记录</em></div>
+      <div class="page-sub">所有 WhatsApp 自动回复历史</div>
+    </div>
+    <div class="tb-right">
+      <button class="btn btn-ghost" onclick="exportLog()">📤 导出 CSV</button>
+      <button class="btn btn-red" onclick="clearLog()">🗑 清空</button>
+    </div>
+  </div>
+  <div class="panel"><div class="panel-body" style="padding:0;overflow-x:auto">
+    <table class="log-tbl">
+      <thead><tr><th>时间</th><th>顾客姓名</th><th>电话</th><th>询问类型</th><th>触发规则</th><th>消息摘要</th><th>状态</th></tr></thead>
+      <tbody id="log-body"><tr><td colspan="7" style="text-align:center;padding:26px;color:var(--mu)">暂无记录</td></tr></tbody>
+    </table>
+  </div></div>
+</div>
+
+<!-- ══ 自动回复规则 ══ -->
+<div id="v-rules" class="view">
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="page-title">⚙️ <em>自动回复规则</em></div>
+      <div class="page-sub">顾客询问类型 → 触发模板 → 加入发送队列</div>
+    </div>
+    <div class="tb-right">
+      <button class="btn btn-wa" onclick="openRuleModal()">➕ 新增规则</button>
+    </div>
+  </div>
+  <div class="info-box"><strong>规则工作原理：</strong> 顾客完成问卷后，系统自动匹配规则，生成个性化 WhatsApp 消息并加入待发队列。</div>
+  <div class="rule-list" id="rules-list"></div>
+</div>
+
+<!-- ══ 消息模板 ══ -->
+<div id="v-templates" class="view">
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="page-title">📝 <em>消息模板</em></div>
+      <div class="page-sub">管理各类顾客的 WhatsApp 回复模板</div>
+    </div>
+    <div class="tb-right">
+      <button class="btn btn-wa" onclick="openTplModal()">➕ 新增模板</button>
+    </div>
+  </div>
+  <div class="info-box"><strong>可用变量：</strong>
+    <div class="var-chips" style="margin-top:7px">
+      <span class="var-chip">{{姓名}}</span><span class="var-chip">{{名字}}</span><span class="var-chip">{{电话}}</span>
+      <span class="var-chip">{{询问类型}}</span><span class="var-chip">{{预算}}</span><span class="var-chip">{{区域}}</span>
+      <span class="var-chip">{{房型}}</span><span class="var-chip">{{日期}}</span><span class="var-chip">{{时间}}</span><span class="var-chip">{{Rex电话}}</span>
+    </div>
+  </div>
+  <div class="rule-list" id="tpl-list"></div>
+</div>
+
+<!-- ══ 工作时间 ══ -->
+<div id="v-schedule" class="view">
+  <div class="topbar">
+    <div class="tb-left"><div class="page-title">工作时间 <em>设置</em></div><div class="page-sub">AI 24小时值班 · 设置人工服务时段</div></div>
+    <div class="tb-right"><button class="btn btn-wa" onclick="saveSchedule()">💾 保存设置</button></div>
+  </div>
+  <div class="panel" style="margin-bottom:14px">
+    <div class="panel-head"><div class="panel-title">📅 工作日设置</div></div>
+    <div class="panel-body">
+      <div class="form-group">
+        <label class="form-label">工作日（点击切换）</label>
+        <div class="sched-grid">
+          <div class="day-pill on" onclick="this.classList.toggle('on')" data-day="mon">周一</div>
+          <div class="day-pill on" onclick="this.classList.toggle('on')" data-day="tue">周二</div>
+          <div class="day-pill on" onclick="this.classList.toggle('on')" data-day="wed">周三</div>
+          <div class="day-pill on" onclick="this.classList.toggle('on')" data-day="thu">周四</div>
+          <div class="day-pill on" onclick="this.classList.toggle('on')" data-day="fri">周五</div>
+          <div class="day-pill" onclick="this.classList.toggle('on')" data-day="sat">周六</div>
+          <div class="day-pill" onclick="this.classList.toggle('on')" data-day="sun">周日</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">人工服务时段</label>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <input class="form-inp" type="time" id="work-start" value="09:00" style="width:110px">
+          <span style="color:var(--mu2);font-size:.8rem">至</span>
+          <input class="form-inp" type="time" id="work-end" value="18:00" style="width:110px">
+          <span style="font-size:.7rem;color:var(--mu);font-family:'JetBrains Mono',monospace">非工作时段 AI 自动接管</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><div class="panel-title">😴 非工作时间自动回复</div></div>
+    <div class="panel-body">
+      <div class="form-group">
+        <label class="form-label">非工作时间提示语</label>
+        <textarea class="form-inp" id="off-hours-msg">您好！感谢您联系我们 🏠 现在是非工作时间，我是 Rex Yap 的 AI 助手 Merlin，可以帮您解答买房、租房、MM2H等问题。Rex 明天工作时间会亲自跟进您！</textarea>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <label style="font-size:.74rem;color:var(--mu2)">启用非工作时间 AI 回复：</label>
+        <div class="tog-wrap tog-sm" onclick="this.querySelector('.tog-track').classList.toggle('on')">
+          <div class="tog-track on"><div class="tog-knob"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><div class="panel-title">🔔 人工接管通知</div></div>
+    <div class="panel-body" style="display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div><div style="font-size:.8rem;font-weight:600">顾客要求人工时提醒</div><div style="font-size:.69rem;color:var(--mu)">顾客说「找 Rex/找人工」时通知</div></div>
+        <div class="tog-wrap tog-sm" onclick="this.querySelector('.tog-track').classList.toggle('on')"><div class="tog-track on"><div class="tog-knob"></div></div></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div><div style="font-size:.8rem;font-weight:600">AI 无法回答时提醒</div><div style="font-size:.69rem;color:var(--mu)">AI 置信度低时触发通知</div></div>
+        <div class="tog-wrap tog-sm" onclick="this.querySelector('.tog-track').classList.toggle('on')"><div class="tog-track on"><div class="tog-knob"></div></div></div>
+      </div>
+      <div class="form-group" style="margin:0">
+        <label class="form-label">Rex 的 WhatsApp 号码（接收通知）</label>
+        <input class="form-inp" id="notify-wa-num" placeholder="+60 12-xxx xxxx" style="max-width:220px">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 统计报表 ══ -->
+<div id="v-stats" class="view">
+  <div class="topbar">
+    <div class="tb-left"><div class="page-title">WhatsApp <em>统计</em></div><div class="page-sub">对话分析 · AI 回复率 · 线索转化</div></div>
+    <div class="tb-right">
+      <button class="btn btn-ghost" onclick="loadStats()">🔄 刷新</button>
+      <button class="btn btn-ghost" onclick="exportLog()">📤 导出</button>
+    </div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-card c-wa"><div class="sc-label">本月对话</div><div class="sc-num" id="s-convs">—</div><div class="sc-sub">总对话数</div></div>
+    <div class="stat-card c-g"><div class="sc-label">AI 回复率</div><div class="sc-num" id="s-airate">—%</div><div class="sc-sub">自动处理比例</div></div>
+    <div class="stat-card c-gold"><div class="sc-label">已发送</div><div class="sc-num" id="s-sent">—</div><div class="sc-sub">WA 条数</div></div>
+    <div class="stat-card c-r"><div class="sc-label">转化线索</div><div class="sc-num" id="s-leads">—</div><div class="sc-sub">留下联系方式</div></div>
+  </div>
+  <div class="two-col">
+    <div class="panel"><div class="panel-head"><div class="panel-title">📊 询问类型分布</div></div>
+      <div class="panel-body" id="top-qs"><div class="empty"><div class="empty-txt">暂无数据</div></div></div>
+    </div>
+    <div class="panel"><div class="panel-head"><div class="panel-title">📈 每日发送量</div></div>
+      <div class="panel-body"><div id="daily-chart"></div></div>
+    </div>
+    <div class="panel"><div class="panel-head"><div class="panel-title">🎯 规则触发统计</div></div>
+      <div class="panel-body" id="rule-stats"><div class="empty"><div class="empty-txt">暂无数据</div></div></div>
+    </div>
+    <div class="panel"><div class="panel-head">
+        <div class="panel-title">✨ AI 洞察分析</div>
+        <button class="btn btn-ghost" style="font-size:.69rem" onclick="genInsight()">生成分析</button>
+      </div>
+      <div class="panel-body">
+        <div style="background:linear-gradient(135deg,rgba(168,85,247,.07),rgba(37,211,102,.04));border:1px solid rgba(168,85,247,.2);border-radius:10px;padding:12px 14px">
+          <div id="stats-insight" style="font-size:.76rem;color:var(--mu2);line-height:1.7;font-style:italic">点击「生成分析」获取 AI 洞察建议…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 设置 ══ -->
+<div id="v-settings" class="view">
+  <div class="topbar">
+    <div class="tb-left"><div class="page-title">🔧 <em>系统设置</em></div><div class="page-sub">WhatsApp 连接 · API 配置 · AI 系统提示词</div></div>
+    <div class="tb-right"><button class="btn btn-wa" onclick="saveAllSettings()">💾 保存设置</button></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><div class="panel-title">🖥️ 后端服务器连接</div><div id="srv-settings-status" style="font-family:'JetBrains Mono',monospace;font-size:.69rem;color:var(--mu)">未连接</div></div>
+    <div class="panel-body">
+      <div class="setting-row">
+        <div class="setting-left"><div class="setting-title">服务器地址</div><div class="setting-desc">运行 server.js 的地址（本地默认 http://localhost:3000）</div></div>
+        <div class="setting-right" style="display:flex;gap:6px">
+          <input class="form-inp" id="set-server-url" placeholder="http://localhost:3000" style="width:220px">
+          <button class="btn btn-wa btn-sm" onclick="saveServerUrl()">连接</button>
+        </div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-left"><div class="setting-title">WhatsApp 状态</div><div class="setting-desc">后端连接后显示 WhatsApp 扫码状态</div></div>
+        <div class="setting-right" style="display:flex;gap:6px;align-items:center">
+          <span id="set-wa-detail" style="font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--mu2)">—</span>
+          <button class="btn btn-ghost btn-sm" onclick="showQR()" id="set-qr-btn" style="display:none">📱 扫码</button>
+          <button class="btn btn-ghost btn-sm" onclick="serverLogout()">登出 WA</button>
+        </div>
+      </div>
+      <div class="info-box" style="margin-top:8px;margin-bottom:0"><strong>💡 工作原理：</strong>本页面连接本地 server.js 后端，后端通过 whatsapp-web.js 用你的手机号真实发送 WhatsApp 消息。<a href="#" onclick="openSrvHelp();return false" style="color:var(--wa)">查看启动指南</a></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><div class="panel-title">💬 WhatsApp 配置</div></div>
+    <div class="panel-body">
+      <div class="setting-row">
+        <div class="setting-left"><div class="setting-title">Rex 的 WhatsApp 号码</div><div class="setting-desc">用于发送消息给顾客的号码</div></div>
+        <div class="setting-right"><input class="form-inp" id="set-wa-num" placeholder="60112529XXXX" style="width:180px"></div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-left"><div class="setting-title">发送延迟（秒）</div><div class="setting-desc">新顾客询问后延迟多少秒发送（建议 30–120 秒）</div></div>
+        <div class="setting-right"><input class="form-inp" id="set-delay" type="number" value="60" min="0" max="3600" style="width:100px"></div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-left"><div class="setting-title">发送模式</div><div class="setting-desc">手动确认：加入队列等 Rex 确认；自动：直接弹出 WA 链接</div></div>
+        <div class="setting-right"><select class="form-inp" id="set-mode" style="width:150px"><option value="manual">手动确认</option><option value="auto">自动弹出 WA</option></select></div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-left"><div class="setting-title">回复语言</div><div class="setting-desc">自动回复默认使用的语言</div></div>
+        <div class="setting-right"><select class="form-inp" id="set-lang" style="width:150px"><option value="zh">中文</option><option value="en">English</option><option value="ms">Bahasa Melayu</option><option value="auto">跟随顾客语言</option></select></div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-left"><div class="setting-title">仅回复完成问卷的顾客</div><div class="setting-desc">未完成问卷的访客不会收到自动回复</div></div>
+        <div class="setting-right"><div class="tog-wrap" onclick="togS('set-completed')"><div class="tog-track on" id="set-completed"><div class="tog-knob"></div></div></div></div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-left"><div class="setting-title">跳过匿名顾客</div><div class="setting-desc">没有留下姓名和电话的顾客不发送</div></div>
+        <div class="setting-right"><div class="tog-wrap" onclick="togS('set-skip-anon')"><div class="tog-track on" id="set-skip-anon"><div class="tog-knob"></div></div></div></div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-left"><div class="setting-title">避免重复发送</div><div class="setting-desc">同一顾客 24 小时内不重复发送相同类型消息</div></div>
+        <div class="setting-right"><div class="tog-wrap" onclick="togS('set-dedup')"><div class="tog-track on" id="set-dedup"><div class="tog-knob"></div></div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" style="border-color:rgba(168,85,247,.2)">
+    <div class="panel-head"><div class="panel-title">🤖 AI 设置</div></div>
+    <div class="panel-body">
+      <div class="form-group">
+        <label class="form-label">AI 系统提示词（角色设定）</label>
+        <textarea class="form-inp" id="ai-system-prompt" style="min-height:100px">你是 Rex Yap 的专业房地产助手，服务沙巴（亚庇）地区的顾客。用简洁、友好的语气回复，中文为主。帮助顾客了解买房、租房、MM2H签证等问题。如需预约看房，收集顾客姓名和电话后告知 Rex 会跟进联系。</textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group" style="margin:0">
+          <label class="form-label">AI 回复模型</label>
+          <select class="form-inp" id="ai-model"><option value="claude">Claude（Anthropic）</option><option value="deepseek">DeepSeek（便宜）</option></select>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">回复延迟（秒）</label>
+          <input class="form-inp" type="number" id="ai-delay" value="2" min="0" max="30">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" style="border-color:rgba(168,85,247,.2)">
+    <div class="panel-head"><div class="panel-title">🔑 DeepSeek API Key（可选）</div></div>
+    <div class="panel-body">
+      <div class="setting-desc" style="margin-bottom:11px">填入后使用 DeepSeek AI 生成个性化回复。申请：<a href="https://platform.deepseek.com/" target="_blank" style="color:var(--purple)">platform.deepseek.com</a></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <input type="password" id="set-api-key" class="form-inp" placeholder="sk-xxxxxxxx…" style="max-width:320px;flex:1">
+        <button class="btn btn-wa" onclick="saveApiKey()">💾 保存 Key</button>
+        <button class="btn btn-ghost" onclick="clearApiKey()">🗑 清除</button>
+      </div>
+      <div id="set-api-status" style="font-family:'JetBrains Mono',monospace;font-size:.69rem;margin-top:8px;color:var(--mu)"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><div class="panel-title">🔌 系统对接说明</div></div>
+    <div class="panel-body">
+      <div class="setup-step">
+        <h3><span class="step-num">1</span>文件部署结构</h3>
+        <div class="code-block" id="code-structure">your-site/
+  ├── index.html                 ← Merlin 聊天机器人（前台）
+  ├── merlin-admin.html          ← CRM 管理后台
+  └── merlin-wa-crm.html         ← 本文件（WA 自动回复）</div>
+        <button class="copy-code-btn" onclick="copyCode('code-structure')">复制</button>
+      </div>
+      <div class="setup-step">
+        <h3><span class="step-num">2</span>在 index.html 注册回调（推荐）</h3>
+        <div class="code-block" id="code-callback">// 在 notifyRexOnFlowComplete() 末尾加入：
+window.dispatchEvent(new CustomEvent('merlin:lead_saved', {
+  detail: { lead: leadData, flow: _flow }
+}));</div>
+        <button class="copy-code-btn" onclick="copyCode('code-callback')">复制</button>
+      </div>
+      <div class="setup-step">
+        <h3><span class="step-num">3</span>Firebase 实时监听（已内置）</h3>
+        <p>本页面已连接 Firebase Firestore（merlin-crm-2），会实时监听 <code style="color:var(--g2)">merlin_leads</code> 集合的新增记录并自动触发回复逻辑。</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- RULE MODAL -->
+<div class="modal-overlay" id="rule-modal">
+  <div class="modal">
+    <div class="modal-head"><div class="modal-title" id="rule-modal-title">新增自动回复规则</div><button class="modal-close" onclick="closeModal('rule-modal')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="rule-edit-id">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">规则名称</label><input class="form-inp" id="rule-name" placeholder="例：买房询问回复"></div>
+        <div class="form-group"><label class="form-label">触发类型</label>
+          <select class="form-inp" id="rule-trigger">
+            <option value="all">全部询问</option><option value="buy">🏠 买房询问</option><option value="rent">🔑 出租询问</option>
+            <option value="mm2h">📋 MM2H</option><option value="booking">📅 看房预约</option><option value="contact">📞 联系我们</option>
+            <option value="newlaunch">🏗️ 新楼盘</option><option value="foreign">🌏 海外买家</option>
+            <option value="anon">👻 匿名访客</option><option value="return">🔄 回访顾客</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">延迟发送（秒）</label><input class="form-inp" id="rule-delay" type="number" value="60" min="0"></div>
+        <div class="form-group"><label class="form-label">优先级</label>
+          <select class="form-inp" id="rule-priority"><option value="1">1 — 最高</option><option value="2" selected>2 — 普通</option><option value="3">3 — 低</option></select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">条件（可选，留空=全部触发）</label>
+        <input class="form-inp" id="rule-condition" placeholder="例：has_phone / has_name / return_2plus / completed"></div>
+      <div class="form-group"><label class="form-label">使用模板</label><select class="form-inp" id="rule-tpl"></select></div>
+      <div class="form-group" style="display:flex;align-items:center;gap:10px">
+        <label class="form-label" style="margin:0">启用此规则</label>
+        <div class="tog-wrap" onclick="togS('rule-enabled')"><div class="tog-track on" id="rule-enabled"><div class="tog-knob"></div></div></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('rule-modal')">取消</button>
+      <button class="btn btn-wa" onclick="saveRule()">💾 保存规则</button>
+    </div>
+  </div>
+</div>
+
+<!-- TEMPLATE MODAL -->
+<div class="modal-overlay" id="tpl-modal">
+  <div class="modal">
+    <div class="modal-head"><div class="modal-title" id="tpl-modal-title">新增消息模板</div><button class="modal-close" onclick="closeModal('tpl-modal')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="tpl-edit-id">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">模板名称</label><input class="form-inp" id="tpl-name" placeholder="例：买房确认回复"></div>
+        <div class="form-group"><label class="form-label">适用类型</label>
+          <select class="form-inp" id="tpl-type">
+            <option value="all">通用</option><option value="buy">🏠 买房</option><option value="rent">🔑 出租</option>
+            <option value="mm2h">📋 MM2H</option><option value="booking">📅 看房预约</option>
+            <option value="anon">👻 匿名邀请</option><option value="return">🔄 回访顾客</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">消息内容（使用 {{变量}} 插入顾客信息）</label>
+        <textarea class="form-inp" id="tpl-body" rows="8" placeholder="您好 {{名字}}！😊&#10;&#10;我是 Rex Yap，沙巴房地产代理人。&#10;&#10;Rex 📞 {{Rex电话}}"></textarea>
+        <div class="var-chips" style="margin-top:6px">
+          <span style="font-size:.63rem;color:var(--mu);margin-right:4px">插入：</span>
+          <span class="var-chip" onclick="insertVar('tpl-body','{{姓名}}')">{{姓名}}</span>
+          <span class="var-chip" onclick="insertVar('tpl-body','{{名字}}')">{{名字}}</span>
+          <span class="var-chip" onclick="insertVar('tpl-body','{{电话}}')">{{电话}}</span>
+          <span class="var-chip" onclick="insertVar('tpl-body','{{询问类型}}')">{{询问类型}}</span>
+          <span class="var-chip" onclick="insertVar('tpl-body','{{预算}}')">{{预算}}</span>
+          <span class="var-chip" onclick="insertVar('tpl-body','{{区域}}')">{{区域}}</span>
+          <span class="var-chip" onclick="insertVar('tpl-body','{{日期}}')">{{日期}}</span>
+          <span class="var-chip" onclick="insertVar('tpl-body','{{Rex电话}}')">{{Rex电话}}</span>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">备注（内部说明，不发给顾客）</label><input class="form-inp" id="tpl-note" placeholder="例：适用于高意向顾客"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('tpl-modal')">取消</button>
+      <button class="btn btn-wa" onclick="saveTpl()">💾 保存模板</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ 聊天机器人构建器 ══ -->
+<div id="v-chatbot" class="view">
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="page-title">🤖 <em>聊天机器人构建器</em></div>
+      <div class="page-sub">可视化配置 · HTML表单触发 · CRM流程 → WhatsApp自动回复</div>
+    </div>
+    <div class="tb-right">
+      <button class="btn btn-ghost" onclick="cbPreviewBot()">👁 预览对话</button>
+      <button class="btn btn-purple" onclick="cbGenWithAI()">✨ AI 生成流程</button>
+      <button class="btn btn-wa" onclick="cbSaveFlow()">💾 保存流程</button>
+    </div>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+    <select class="form-inp" id="cb-flow-select" style="width:auto;padding:7px 12px;font-size:.8rem" onchange="cbLoadFlow()">
+      <option value="buy">🏠 买房询问流程</option>
+      <option value="rent">🔑 出租询问流程</option>
+      <option value="mm2h">📋 MM2H 流程</option>
+      <option value="booking">📅 看房预约流程</option>
+      <option value="contact">📞 一般联系流程</option>
+      <option value="custom">✏️ 自定义流程</option>
+    </select>
+    <button class="btn btn-ghost" style="font-size:.72rem" onclick="cbNewFlow()">＋ 新建流程</button>
+    <button class="btn btn-ghost" style="font-size:.72rem" onclick="cbDupeFlow()">📋 复制当前</button>
+    <div style="margin-left:auto;display:flex;gap:8px">
+      <span id="cb-node-count" style="font-family:var(--mono,monospace);font-size:.68rem;color:var(--mu2);background:var(--s2);border:1px solid var(--bd);padding:4px 10px;border-radius:20px">0 个节点</span>
+      <span id="cb-status-ind" style="font-family:var(--mono,monospace);font-size:.68rem;color:var(--wa);background:rgba(37,211,102,.08);border:1px solid rgba(37,211,102,.2);padding:4px 10px;border-radius:20px">✅ 已保存</span>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 320px;gap:14px;align-items:start">
+    <div>
+      <!-- Triggers -->
+      <div class="panel" style="margin-bottom:12px;border-color:rgba(245,166,35,.25)">
+        <div class="panel-head">
+          <div class="panel-title">⚡ 触发来源</div>
+          <div style="font-size:.68rem;color:var(--mu2)">顾客从哪里进入这个流程？</div>
+        </div>
+        <div class="panel-body">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px" id="cb-triggers">
+            <div class="cb-trig-card active" data-trig="html_form" onclick="cbTogTrig(this)">
+              <div class="cb-trig-icon">📋</div>
+              <div class="cb-trig-name">HTML 表单提交</div>
+              <div class="cb-trig-sub">网站联系表单</div>
+            </div>
+            <div class="cb-trig-card active" data-trig="crm_lead" onclick="cbTogTrig(this)">
+              <div class="cb-trig-icon">🎯</div>
+              <div class="cb-trig-name">CRM 新线索</div>
+              <div class="cb-trig-sub">Merlin 问卷完成</div>
+            </div>
+            <div class="cb-trig-card" data-trig="wa_inbound" onclick="cbTogTrig(this)">
+              <div class="cb-trig-icon">💬</div>
+              <div class="cb-trig-name">WhatsApp 来消息</div>
+              <div class="cb-trig-sub">顾客主动发起</div>
+            </div>
+            <div class="cb-trig-card" data-trig="scheduled" onclick="cbTogTrig(this)">
+              <div class="cb-trig-icon">⏰</div>
+              <div class="cb-trig-name">定时触发</div>
+              <div class="cb-trig-sub">设定时间自动发</div>
+            </div>
+            <div class="cb-trig-card" data-trig="return_visit" onclick="cbTogTrig(this)">
+              <div class="cb-trig-icon">🔄</div>
+              <div class="cb-trig-name">回访顾客</div>
+              <div class="cb-trig-sub">N天后跟进</div>
+            </div>
+            <div class="cb-trig-card" data-trig="manual" onclick="cbTogTrig(this)">
+              <div class="cb-trig-icon">👆</div>
+              <div class="cb-trig-name">手动触发</div>
+              <div class="cb-trig-sub">Rex 手动启动</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Flow nodes -->
+      <div class="panel" style="margin-bottom:12px">
+        <div class="panel-head">
+          <div class="panel-title">🔀 对话流程节点</div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost btn-sm" onclick="cbAddNode('message')">＋ 消息</button>
+            <button class="btn btn-ghost btn-sm" onclick="cbAddNode('condition')">＋ 条件</button>
+            <button class="btn btn-ghost btn-sm" onclick="cbAddNode('wait')">＋ 等待</button>
+            <button class="btn btn-ghost btn-sm" onclick="cbAddNode('action')">＋ 动作</button>
+          </div>
+        </div>
+        <div class="panel-body" style="padding:14px">
+          <div id="cb-flow-canvas"></div>
+          <button class="btn btn-ghost" style="width:100%;margin-top:10px;border-style:dashed;font-size:.74rem" onclick="cbAddNode('message')">＋ 添加步骤</button>
+        </div>
+      </div>
+
+      <!-- Message editor -->
+      <div class="panel" style="border-color:rgba(37,211,102,.2)">
+        <div class="panel-head">
+          <div class="panel-title">📱 消息编辑器</div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost btn-sm" onclick="cbAIWriteMsg()">✨ AI 撰写</button>
+            <button class="btn btn-ghost btn-sm" onclick="cbLoadTpl()">📝 载入模板</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="form-group">
+            <label class="form-label">当前编辑节点</label>
+            <select class="form-inp" id="cb-editing-node" style="font-size:.78rem" onchange="cbNodeSelected()">
+              <option value="">— 选择节点 —</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">消息内容</label>
+            <textarea class="form-inp" id="cb-msg-body" rows="6" oninput="cbMsgChanged()" placeholder="您好 {{名字}}！我是 Rex Yap，沙巴房地产代理人。&#10;&#10;Rex 📞 {{Rex电话}}"></textarea>
+            <div class="var-chips" style="margin-top:6px">
+              <span style="font-size:.62rem;color:var(--mu);margin-right:3px">插入变量：</span>
+              <span class="var-chip" onclick="insertVar('cb-msg-body','{{名字}}')">{{名字}}</span>
+              <span class="var-chip" onclick="insertVar('cb-msg-body','{{电话}}')">{{电话}}</span>
+              <span class="var-chip" onclick="insertVar('cb-msg-body','{{预算}}')">{{预算}}</span>
+              <span class="var-chip" onclick="insertVar('cb-msg-body','{{区域}}')">{{区域}}</span>
+              <span class="var-chip" onclick="insertVar('cb-msg-body','{{房型}}')">{{房型}}</span>
+              <span class="var-chip" onclick="insertVar('cb-msg-body','{{日期}}')">{{日期}}</span>
+              <span class="var-chip" onclick="insertVar('cb-msg-body','{{Rex电话}}')">{{Rex电话}}</span>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group" style="margin:0">
+              <label class="form-label">发送延迟</label>
+              <select class="form-inp" id="cb-msg-delay" style="font-size:.78rem">
+                <option value="0">立即发送</option>
+                <option value="30">30秒后</option>
+                <option value="60" selected>1分钟后</option>
+                <option value="300">5分钟后</option>
+                <option value="1800">30分钟后</option>
+                <option value="3600">1小时后</option>
+                <option value="86400">1天后</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0">
+              <label class="form-label">发送条件</label>
+              <select class="form-inp" id="cb-msg-cond" style="font-size:.78rem">
+                <option value="">无条件（总是发送）</option>
+                <option value="has_phone">有留电话</option>
+                <option value="has_name">有留姓名</option>
+                <option value="completed">完成问卷</option>
+                <option value="no_reply_24h">24h未回复</option>
+                <option value="budget_500k">预算≥50万</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-top:12px;display:flex;gap:8px">
+            <button class="btn btn-wa" style="flex:1" onclick="cbSaveNodeMsg()">💾 保存此节点</button>
+            <button class="btn btn-ghost" onclick="cbTestMsg()">📤 测试</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT panel -->
+    <div style="position:sticky;top:20px;display:flex;flex-direction:column;gap:12px">
+      <!-- Phone preview -->
+      <div class="panel" style="border-color:rgba(37,211,102,.18)">
+        <div class="panel-head">
+          <div class="panel-title">📱 实时预览</div>
+          <button class="btn btn-ghost btn-sm" onclick="cbRefreshPreview()">🔄</button>
+        </div>
+        <div class="panel-body" style="padding:12px">
+          <div class="wa-phone">
+            <div class="wa-phone-head">
+              <div class="wa-av">👤</div>
+              <div><div class="wa-cname">陈小姐</div><div class="wa-cstatus">+60 11-1234 5678</div></div>
+            </div>
+            <div class="wa-msgs" id="cb-preview-msgs" style="min-height:160px"></div>
+            <div class="wa-input-row"><div class="wa-inp-fake">输入消息…</div><div class="wa-send-fake">➤</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Flow settings -->
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">⚙️ 流程设置</div></div>
+        <div class="panel-body" style="display:flex;flex-direction:column;gap:10px">
+          <div class="form-group" style="margin:0">
+            <label class="form-label">流程名称</label>
+            <input class="form-inp" id="cb-flow-name" style="font-size:.78rem" placeholder="例：买房自动跟进流程">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label class="form-label">目标顾客</label>
+            <select class="form-inp" id="cb-target" style="font-size:.78rem">
+              <option value="buy">🏠 买房顾客</option>
+              <option value="rent">🔑 租房顾客</option>
+              <option value="mm2h">📋 MM2H申请者</option>
+              <option value="all">全部顾客</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <span style="font-size:.78rem;font-weight:600">启用此流程</span>
+            <div class="tog-wrap tog-sm" onclick="togS('cb-flow-enabled')"><div class="tog-track on" id="cb-flow-enabled"><div class="tog-knob"></div></div></div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <span style="font-size:.78rem;font-weight:600">AI 个性化消息</span>
+            <div class="tog-wrap tog-sm" onclick="togS('cb-ai-personalize')"><div class="tog-track on" id="cb-ai-personalize"><div class="tog-knob"></div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">📊 流程统计</div></div>
+        <div class="panel-body" style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;justify-content:space-between">
+            <span style="font-size:.74rem;color:var(--mu2)">已触发次数</span>
+            <span id="cb-stat-triggered" style="font-size:.86rem;color:var(--wa);font-weight:600">0</span>
+          </div>
+          <div style="display:flex;justify-content:space-between">
+            <span style="font-size:.74rem;color:var(--mu2)">已发送消息</span>
+            <span id="cb-stat-sent" style="font-size:.86rem;color:var(--g2);font-weight:600">0</span>
+          </div>
+          <div style="display:flex;justify-content:space-between">
+            <span style="font-size:.74rem;color:var(--mu2)">顾客回复率</span>
+            <span id="cb-stat-reply" style="font-size:.86rem;color:var(--gold);font-weight:600">—%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Export -->
+      <div class="panel" style="border-color:rgba(168,85,247,.2)">
+        <div class="panel-head"><div class="panel-title">🔌 集成导出</div></div>
+        <div class="panel-body" style="display:flex;flex-direction:column;gap:7px">
+          <button class="btn btn-ghost" style="justify-content:flex-start;font-size:.74rem" onclick="cbExportRule()">⚙️ 导出为自动回复规则</button>
+          <button class="btn btn-ghost" style="justify-content:flex-start;font-size:.74rem" onclick="cbExportTpl()">📝 导出为消息模板</button>
+          <button class="btn btn-ghost" style="justify-content:flex-start;font-size:.74rem" onclick="cbCopyWebhook()">🔗 复制 Webhook 触发代码</button>
+          <button class="btn btn-ghost" style="justify-content:flex-start;font-size:.74rem" onclick="cbExportJSON()">📦 导出流程 JSON</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main><!-- /main -->
+
+<!-- CHATBOT PREVIEW MODAL -->
+<div class="modal-overlay" id="cb-preview-modal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-head">
+      <div class="modal-title">👁 完整流程预览</div>
+      <button class="modal-close" onclick="closeModal('cb-preview-modal')">✕</button>
+    </div>
+    <div class="modal-body" style="padding:14px">
+      <div class="wa-phone" style="max-width:100%">
+        <div class="wa-phone-head">
+          <div class="wa-av">👤</div>
+          <div><div class="wa-cname">陈小姐（模拟顾客）</div><div class="wa-cstatus online">在线</div></div>
+        </div>
+        <div class="wa-msgs" id="cb-full-preview" style="max-height:400px"></div>
+        <div class="wa-input-row"><div class="wa-inp-fake">输入消息…</div><div class="wa-send-fake">➤</div></div>
+      </div>
+      <div style="margin-top:10px;font-size:.71rem;color:var(--mu);text-align:center">模拟：陈小姐 · 买房 · 预算RM500–800k · KK区</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('cb-preview-modal')">关闭</button>
+      <button class="btn btn-wa" onclick="cbSaveFlow();closeModal('cb-preview-modal')">✅ 保存并启用</button>
+    </div>
+  </div>
+</div>
+
+<!-- WEBHOOK MODAL -->
+<div class="modal-overlay" id="cb-webhook-modal">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-head">
+      <div class="modal-title">🔗 Webhook 触发代码</div>
+      <button class="modal-close" onclick="closeModal('cb-webhook-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="info-box"><strong>使用方法：</strong>将以下代码粘贴到 HTML 表单提交成功后执行，即可自动触发此流程。</div>
+      <div class="code-block" id="cb-webhook-code" style="font-size:.68rem;line-height:1.75;margin-top:10px"></div>
+      <button class="btn btn-wa btn-sm" style="margin-top:10px" onclick="cbCopyWebhookCode()">📋 复制代码</button>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('cb-webhook-modal')">关闭</button></div>
+  </div>
+</div>
+
+<style>
+.cb-trig-card{background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:11px 12px;cursor:pointer;transition:all .2s;text-align:center}
+.cb-trig-card:hover{border-color:var(--bd2);background:var(--s3)}
+.cb-trig-card.active{border-color:rgba(245,166,35,.4);background:rgba(245,166,35,.06)}
+.cb-trig-icon{font-size:1.4rem;margin-bottom:5px}
+.cb-trig-name{font-size:.74rem;font-weight:700;margin-bottom:2px}
+.cb-trig-sub{font-size:.62rem;color:var(--mu2)}
+.flow-node{background:var(--s2);border:1px solid var(--bd);border-radius:11px;padding:13px 15px;margin-bottom:8px;position:relative;transition:all .2s}
+.flow-node:hover{border-color:var(--bd2)}
+.flow-node.active-edit{border-color:rgba(37,211,102,.4);background:rgba(37,211,102,.03)}
+.flow-node-head{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+.fn-type-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0}
+.fn-msg{background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.25)}
+.fn-cond{background:rgba(168,85,247,.12);border:1px solid rgba(168,85,247,.25)}
+.fn-wait{background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.25)}
+.fn-action{background:rgba(0,212,255,.1);border:1px solid rgba(0,212,255,.25)}
+.fn-end{background:rgba(255,77,109,.1);border:1px solid rgba(255,77,109,.25)}
+.flow-node-title{font-size:.8rem;font-weight:700;flex:1}
+.flow-node-acts{display:flex;gap:5px;margin-left:auto}
+.fn-btn{background:var(--s3);border:1px solid var(--bd);border-radius:6px;padding:3px 8px;font-size:.65rem;cursor:pointer;color:var(--mu2);font-family:inherit;transition:all .15s}
+.fn-btn:hover{color:var(--tx);border-color:var(--bd2)}
+.fn-btn.del:hover{color:var(--red);border-color:rgba(255,77,109,.3)}
+.flow-node-body{font-size:.72rem;color:var(--mu2);line-height:1.55;background:rgba(0,0,0,.2);border-radius:7px;padding:9px 11px;white-space:pre-wrap;word-break:break-word;max-height:80px;overflow-y:auto;border:1px solid var(--bd)}
+.flow-node-meta{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.fn-meta-tag{font-size:.59rem;padding:2px 7px;border-radius:20px;border:1px solid}
+.flow-connector{text-align:center;color:var(--mu);font-size:.75rem;padding:2px 0;display:flex;align-items:center;gap:4px;justify-content:center;margin:0 0 8px}
+.flow-connector::before,.flow-connector::after{content:'';flex:1;height:1px;background:var(--bd)}
+.cond-branches{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0}
+.cond-branch{background:rgba(0,0,0,.2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px}
+.cond-branch-lbl{font-size:.62rem;font-weight:700;margin-bottom:3px}
+.cond-branch.yes .cond-branch-lbl{color:var(--wa)}
+.cond-branch.no .cond-branch-lbl{color:var(--red)}
+.cond-branch-body{font-size:.7rem;color:var(--mu2)}
+</style>
+
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// FIREBASE
+// ═══════════════════════════════════════════════════
+var FB_CFG={apiKey:'AIzaSyC2xKpugmd21kn8nByD45MEyiU2unvVyAM',authDomain:'merlin-crm-2.firebaseapp.com',projectId:'merlin-crm-2',storageBucket:'merlin-crm-2.firebasestorage.app',messagingSenderId:'59780581612',appId:'1:59780581612:web:209f1dc379320cc76dfdc9'};
+var _fbDb=null;
+function initFB(){
+  try{
+    if(!firebase.apps||!firebase.apps.length)firebase.initializeApp(FB_CFG);
+    _fbDb=firebase.firestore();
+    _fbDb.collection('merlin_leads').onSnapshot(function(snap){
+      snap.docChanges().forEach(function(ch){
+        if(ch.type==='added'&&_fbInitialLoaded) onNewLead(ch.doc.data());
+      });
+    },function(e){console.warn('FB:',e);});
+    loadConvsFromFB();
+  }catch(e){console.warn('Firebase:',e);}
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initFB);else initFB();
+
+// ═══════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════
+var _fbInitialLoaded=false;
+setTimeout(function(){_fbInitialLoaded=true;},3000);
+
+var masterEnabled=lsGet('wa_crm_master')!=='false';
+var globalAI=true;
+var queue=lsJ('wa_crm_queue')||[];
+var sendLog=lsJ('wa_crm_log')||[];
+var rules=lsJ('wa_crm_rules')||defaultRules();
+var templates=lsJ('wa_crm_tpls')||defaultTemplates();
+var settings=lsJ('wa_crm_settings')||defaultSettings();
+var processedIds=lsJ('wa_crm_processed')||[];
+var conversations=[];
+var activeConv=null;
+var convMode={};
+
+// ── Storage helpers ──
+function lsGet(k){return localStorage.getItem(k);}
+function lsJ(k){try{var v=lsGet(k);return v?JSON.parse(v):null;}catch(e){return null;}}
+function lsSave(k,v){localStorage.setItem(k,typeof v==='string'?v:JSON.stringify(v));}
+function saveAll(){
+  lsSave('wa_crm_queue',queue);lsSave('wa_crm_log',sendLog);
+  lsSave('wa_crm_rules',rules);lsSave('wa_crm_tpls',templates);
+  lsSave('wa_crm_settings',settings);lsSave('wa_crm_processed',processedIds);
+}
+
+// ═══════════════════════════════════════════════════
+// DEFAULTS
+// ═══════════════════════════════════════════════════
+function defaultSettings(){return{waNum:lsGet('merlin_wa_num')||'',delay:60,mode:'manual',lang:'auto',onlyCompleted:true,skipAnon:true,dedup:true};}
+
+function defaultTemplates(){
+  return[
+    {id:'tpl-buy',name:'买房询问 — 温暖版',type:'buy',note:'适用买房顾客',body:'您好 {{名字}}！😊\n\n我是 Rex Yap，沙巴房地产代理人。看到您正在寻找 {{区域}} 一带的 {{房型}}，预算 {{预算}}。\n\n我已为您筛选了几个非常符合需求的房源，方便我发给您参考吗？\n\nRex 📞 {{Rex电话}}'},
+    {id:'tpl-rent',name:'出租询问 — 温暖版',type:'rent',note:'适用租房顾客',body:'您好 {{名字}}！😊\n\n我是 Rex Yap，沙巴房地产代理人。了解到您在寻找 {{区域}} 的出租房源，预算 {{预算}}。🏡\n\n我这里有几套符合要求的房源，需要我发给您看看吗？\n\nRex 📞 {{Rex电话}}'},
+    {id:'tpl-mm2h',name:'MM2H 询问',type:'mm2h',note:'适用MM2H顾客',body:'您好 {{名字}}！😊\n\n我是 Rex Yap。了解到您对 MM2H 签证感兴趣。📋\n\n2024 年最新 MM2H 申请条件已有更新，我可以为您详细讲解，方便什么时候聊聊？\n\nRex 📞 {{Rex电话}}'},
+    {id:'tpl-booking',name:'看房预约确认',type:'booking',note:'预约看房确认',body:'您好 {{名字}}！😊\n\n这里是 Rex Yap，确认您 {{日期}} {{时间}} 的看房预约。\n\n🏠 看房类型：{{房型}}\n📍 意向房源：{{区域}}\n\n如有任何变动请提前告知，期待与您见面！\n\nRex 📞 {{Rex电话}}'},
+    {id:'tpl-anon',name:'邀请匿名访客',type:'anon',note:'没有留下联系方式的访客',body:'您好！我是 Rex Yap，沙巴房地产代理人。😊\n\n您早前在我们平台上浏览了房产资讯，我很乐意为您提供更多帮助！\n\n随时欢迎联系我 😊\n\nRex 📞 {{Rex电话}}'},
+    {id:'tpl-return',name:'回访顾客问候',type:'return',note:'多次来访顾客',body:'您好 {{名字}}！😊\n\n感谢您再次光临！我是 Rex Yap。\n\n注意到您已经多次浏览，相信一定是在认真找房子 🏡 有什么我可以帮到您的吗？\n\nRex 📞 {{Rex电话}}'}
+  ];
+}
+
+function defaultRules(){
+  return[
+    {id:'rule-1',name:'买房询问自动回复',trigger:'buy',tplId:'tpl-buy',delay:60,priority:1,enabled:true,condition:'has_phone'},
+    {id:'rule-2',name:'出租询问自动回复',trigger:'rent',tplId:'tpl-rent',delay:60,priority:1,enabled:true,condition:'has_phone'},
+    {id:'rule-3',name:'MM2H 询问回复',trigger:'mm2h',tplId:'tpl-mm2h',delay:90,priority:1,enabled:true,condition:'has_phone'},
+    {id:'rule-4',name:'看房预约确认',trigger:'booking',tplId:'tpl-booking',delay:30,priority:1,enabled:true,condition:''},
+    {id:'rule-5',name:'回访顾客问候',trigger:'return',tplId:'tpl-return',delay:120,priority:2,enabled:true,condition:'return_2plus'}
+  ];
+}
+
+// ═══════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════
+function showView(id,btn){
+  document.querySelectorAll('.view').forEach(function(v){v.classList.remove('on');});
+  document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('on');});
+  var el=document.getElementById(id);if(el)el.classList.add('on');
+  if(btn)btn.classList.add('on');
+  if(id==='v-conversations'){loadConvs();updateConvStats();}
+  if(id==='v-queue')renderQueue();
+  if(id==='v-log')renderLog();
+  if(id==='v-rules'){renderRules();refreshTplSelect();}
+  if(id==='v-templates')renderTemplates();
+  if(id==='v-stats')loadStats();
+  if(id==='v-settings')loadSettingsUI();
+  if(id==='v-chatbot'){cbLoadFlow();}
+  if(id==='v-dashboard'){renderDashRules();renderDashLog();updateDashStats();updateSim();}
+}
+
+// ═══════════════════════════════════════════════════
+// MASTER TOGGLE
+// ═══════════════════════════════════════════════════
+function togMaster(){
+  masterEnabled=!masterEnabled;
+  lsSave('wa_crm_master',masterEnabled?'true':'false');
+  lsSave('merlin_auto_reply',masterEnabled?'true':'false');
+  document.getElementById('master-tog').classList.toggle('on',masterEnabled);
+  document.getElementById('master-lbl').textContent=masterEnabled?'自动回复开启':'自动回复已关闭';
+  document.getElementById('master-status').textContent=masterEnabled?'✅ 已启用':'⏸ 已关闭';
+  document.getElementById('master-status').style.color=masterEnabled?'var(--wa)':'var(--red)';
+  toast(masterEnabled?'✅ 自动回复已开启':'⏸ 自动回复已关闭');
+}
+
+function togGlobalAI(){
+  globalAI=!globalAI;
+  document.getElementById('global-ai-tog').classList.toggle('on',globalAI);
+  document.getElementById('global-ai-lbl').textContent=globalAI?'AI 已开启':'AI 已关闭';
+  toast(globalAI?'🤖 全局 AI 已开启':'⏸ AI 已暂停');
+}
+
+// ═══════════════════════════════════════════════════
+// CONVERSATIONS (from Firebase + localStorage)
+// ═══════════════════════════════════════════════════
+function loadConvsFromFB(){
+  var ls=lsJ('merlin_crm_leads')||[];
+  if(_fbDb){
+    _fbDb.collection('merlin_leads').orderBy('time','desc').limit(60).get().then(function(snap){
+      var fb=[];snap.forEach(function(doc){fb.push(doc.data());});
+      mergeLeads([...fb,...ls]);
+    }).catch(function(){mergeLeads(ls);});
+  } else {
+    mergeLeads(ls);
+  }
+}
+
+function loadConvs(){loadConvsFromFB();}
+
+function syncFromMerlin(){
+  loadConvs();
+  toast('🔄 正在同步顾客数据…');
+  setTimeout(function(){updateDashStats();updateConvStats();toast('✅ 同步完成');},1500);
+}
+
+function mergeLeads(leads){
+  conversations=leads.map(function(l){
+    return{
+      id:l.sessionId||l.id||('c_'+Math.random().toString(36).slice(2)),
+      name:l.customerName||l.name||'匿名访客',
+      phone:l.customerPhone||l.phone||'',
+      type:l.flow||l.type||'chat',
+      lastMsg:l.msg||l.summary||'—',
+      time:l.time||l.completedAt||new Date().toISOString(),
+      status:l.status||'new',
+      unread:l.status==='new',
+      aiEnabled:true,
+      messages:buildMockMsgs(l)
+    };
+  });
+  renderConvList();
+  updateConvStats();
+  updateDashStats();
+}
+
+function buildMockMsgs(l){
+  var msgs=[];
+  var name=l.customerName||l.name||'您';
+  var inMsg=l.flow==='buy'?'您好，我想了解买房的情况':l.flow==='rent'?'请问有房子出租吗？':l.flow==='mm2h'?'我想了解 MM2H 签证':(l.msg||'您好！');
+  msgs.push({role:'user',text:inMsg,time:l.time});
+  msgs.push({role:'bot',text:'您好 '+name+'！感谢您联系 Rex Yap 房地产 🏠\n我是 AI 助手 Merlin，现在为您服务。请问您对哪个区域感兴趣呢？',time:l.time,auto:true});
+  if(l.customerPhone)msgs.push({role:'user',text:'我的电话是 '+l.customerPhone,time:l.time});
+  if(l.customerPhone)msgs.push({role:'bot',text:'收到！Rex 会尽快联系您 📞 感谢！',time:l.time,auto:true});
+  return msgs;
+}
+
+function renderConvList(){
+  var el=document.getElementById('conv-list');if(!el)return;
+  var search=(document.getElementById('conv-search').value||'').toLowerCase();
+  var filter=document.getElementById('conv-filter').value;
+  var filtered=conversations.filter(function(c){
+    var ms=!search||(c.name.toLowerCase().includes(search)||c.phone.includes(search));
+    var mf=filter==='all'||(filter==='unread'&&c.unread)||(filter==='ai'&&c.aiEnabled)||(filter==='human'&&!c.aiEnabled);
+    return ms&&mf;
+  });
+  if(!filtered.length){el.innerHTML='<div class="empty"><div class="empty-icon">💬</div><div class="empty-txt">无匹配对话</div></div>';return;}
+  el.innerHTML=filtered.map(function(c){
+    return'<div class="conv-item'+(c.unread?' unread':'')+(activeConv&&activeConv.id===c.id?' active':'')+'" onclick="selectConv(\''+c.id+'\')">'
+      +'<div class="conv-top"><div class="conv-avatar">'+c.name.charAt(0).toUpperCase()+'</div>'
+      +'<div class="conv-name">'+esc(c.name)+'</div>'
+      +'<div class="conv-time">'+relTime(c.time)+'</div></div>'
+      +'<div class="conv-preview">'+esc(c.lastMsg||'—')+'</div>'
+      +'<div class="conv-meta">'
+        +'<span class="chip chip-wa">💬 WA</span>'
+        +(c.aiEnabled?'<span class="chip chip-auto">🤖 AI</span>':'<span class="chip chip-human">👤 人工</span>')
+        +(c.unread?'<span class="chip chip-new">未读</span>':'<span class="chip chip-done">已处理</span>')
+        +(c.phone?'<span class="chip chip-wa" style="background:rgba(0,212,255,.08);color:var(--g2);border-color:rgba(0,212,255,.2)">'+esc(c.phone)+'</span>':'')
+      +'</div></div>';
+  }).join('');
+}
+
+function filterConvs(){renderConvList();}
+
+function selectConv(id){
+  activeConv=conversations.find(function(c){return c.id===id;});
+  if(!activeConv)return;
+  activeConv.unread=false;
+  renderConvList();
+  openChatUI();
+}
+
+function openChatUI(){
+  if(!activeConv)return;
+  document.getElementById('chat-placeholder').style.display='none';
+  var ui=document.getElementById('chat-ui');
+  ui.style.display='flex';
+  document.getElementById('chat-av').textContent=activeConv.name.charAt(0).toUpperCase();
+  document.getElementById('chat-cname').textContent=activeConv.name;
+  document.getElementById('chat-csub').textContent=(activeConv.phone||'未留电话')+' · '+typeLabel(activeConv.type);
+  var mode=convMode[activeConv.id]||'ai';
+  setMode(mode,true);
+  renderMessages();
+  updateConvStats();
+}
+
+function renderMessages(){
+  var el=document.getElementById('chat-messages');if(!el)return;
+  if(!activeConv||!activeConv.messages){el.innerHTML='';return;}
+  el.innerHTML=activeConv.messages.map(function(m){
+    var isOut=m.role==='bot'||m.role==='agent';
+    var rowCls=isOut?' out':'';
+    var metaCls=isOut?' out':'';
+    return'<div class="msg-row'+rowCls+'">'
+      +'<div class="msg-av '+(m.role==='user'?'user':m.auto?'bot':'agent')+'">'+(m.role==='user'?'👤':m.auto?'🤖':'Rex')+'</div>'
+      +'<div><div class="msg-bubble '+(m.role==='user'?'in':m.auto?'auto-msg':'out')+'">'+esc(m.text).replace(/\n/g,'<br>')+'</div>'
+      +'<div class="msg-meta'+metaCls+'">'+(m.auto?'<span style="color:var(--purple);font-size:.57rem">🤖 AI</span>':'')+relTime(m.time)+'</div></div></div>';
+  }).join('');
+  el.scrollTop=el.scrollHeight;
+}
+
+function sendMsg(){
+  var inp=document.getElementById('chat-inp');
+  var text=(inp.value||'').trim();if(!text||!activeConv)return;
+  activeConv.messages=activeConv.messages||[];
+  activeConv.messages.push({role:'agent',text:text,time:new Date().toISOString(),auto:false});
+  activeConv.lastMsg=text;
+  inp.value='';inp.style.height='auto';
+  renderMessages();renderConvList();
+  toast('📤 消息已发送（模拟）');
+}
+
+function chatKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}
+function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,100)+'px';}
+
+function setMode(mode,silent){
+  if(activeConv)convMode[activeConv.id]=mode;
+  var aiEl=document.getElementById('mode-ai');
+  var huEl=document.getElementById('mode-human');
+  var note=document.getElementById('mode-note');
+  if(mode==='ai'){
+    aiEl.classList.add('on','ai');huEl.classList.remove('on','human');
+    note.textContent='AI 正在自动回复此对话';
+    if(activeConv)activeConv.aiEnabled=true;
+  } else {
+    huEl.classList.add('on','human');aiEl.classList.remove('on','ai');
+    note.textContent='👤 人工接管中 — AI 已暂停';
+    if(activeConv)activeConv.aiEnabled=false;
+  }
+  if(!silent)toast(mode==='ai'?'🤖 AI 已恢复':'👤 已切换为人工接管');
+  renderConvList();
+}
+
+function openWA(){
+  if(!activeConv||!activeConv.phone)return toast('⚠️ 此顾客未留电话');
+  window.open('https://wa.me/'+activeConv.phone.replace(/\D/g,''),'_blank');
+}
+
+function addToQueueFromChat(){
+  if(!activeConv)return toast('请先选择对话');
+  var matched=findRule({flow:activeConv.type,customerPhone:activeConv.phone,customerName:activeConv.name});
+  if(!matched){
+    var msg='您好 '+activeConv.name+'！我是 Rex Yap，感谢您联系我们 🏠 请问有什么可以帮到您？\n\nRex 📞 '+(settings.waNum||'');
+    addToQueue({customerName:activeConv.name,customerPhone:activeConv.phone,flow:activeConv.type},{name:'手动加入',trigger:activeConv.type},{name:'手动',body:msg},msg);
+  } else {
+    var tpl=templates.find(function(t){return t.id===matched.tplId;})||{name:'默认',body:buildFallbackMsg({customerName:activeConv.name,customerPhone:activeConv.phone,flow:activeConv.type})};
+    var msg=renderTpl(tpl.body,{customerName:activeConv.name,customerPhone:activeConv.phone,flow:activeConv.type});
+    addToQueue({customerName:activeConv.name,customerPhone:activeConv.phone,flow:activeConv.type},matched,tpl,msg);
+  }
+  updateQueueBadge();renderQueue();toast('📬 已加入待发队列');
+}
+
+function newChat(){
+  var name=prompt('顾客姓名：');if(!name)return;
+  var phone=prompt('WhatsApp 电话（可选）：')||'';
+  var c={id:'c_'+Date.now(),name:name,phone:phone,type:'chat',lastMsg:'新对话',time:new Date().toISOString(),status:'new',unread:false,messages:[],aiEnabled:true};
+  conversations.unshift(c);
+  renderConvList();selectConv(c.id);
+}
+
+function updateConvStats(){
+  var unread=conversations.filter(function(c){return c.unread;}).length;
+  var auto=conversations.reduce(function(a,c){return a+(c.messages||[]).filter(function(m){return m.auto;}).length;},0);
+  var human=conversations.filter(function(c){return!c.aiEnabled;}).length;
+  setEl('c-total',conversations.length);
+  setEl('c-auto',auto);
+  setEl('c-human',human);
+  setEl('c-unread',unread);
+  setEl('nb-unread',unread);
+}
+
+// ═══════════════════════════════════════════════════
+// AI REPLY GENERATION
+// ═══════════════════════════════════════════════════
+async function genAISuggestion(){
+  if(!activeConv)return toast('⚠️ 请先选择对话');
+  var area=document.getElementById('ai-gen-area');
+  area.style.display='block';
+  document.getElementById('ai-suggestion').innerHTML='<div class="ai-loading"><div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div></div>';
+  var ctx=(activeConv.messages||[]).slice(-4).map(function(m){return(m.role==='user'?'顾客：':'助手：')+m.text;}).join('\n');
+  var prompt='你是 Rex Yap 的房地产 AI 助手 Merlin，服务沙巴亚庇。\n顾客：'+activeConv.name+'，电话：'+(activeConv.phone||'未留')+'\n对话上下文：\n'+ctx+'\n请生成一条简洁、友好、专业的 WhatsApp 回复（中文，80字以内），帮助推进顾客的购买/租房意向。';
+  var res=await callAI(prompt);
+  document.getElementById('ai-suggestion').textContent=res||'AI 生成失败，请重试';
+}
+
+function sendAISuggestion(){
+  var text=document.getElementById('ai-suggestion').textContent;
+  if(!text||!activeConv||text.includes('AI 生成'))return;
+  activeConv.messages=activeConv.messages||[];
+  activeConv.messages.push({role:'bot',text:text,time:new Date().toISOString(),auto:true});
+  activeConv.lastMsg=text;
+  document.getElementById('ai-gen-area').style.display='none';
+  renderMessages();renderConvList();
+  toast('📲 AI 回复已发送（模拟）');
+}
+
+async function genAIBroadcast(){
+  toast('✨ 正在生成广播消息…');
+  var res=await callAI('为 Rex Yap 房地产生成一条简短的 WhatsApp 广播消息，推广沙巴亚庇房产，100字以内，中文，友好专业语气。');
+  if(res)toast('📢 广播：'+res.slice(0,50)+'…');
+}
+
+async function genInsight(){
+  var el=document.getElementById('stats-insight');
+  el.innerHTML='<div class="ai-loading"><div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div></div>';
+  var prompt='你是 Rex Yap 房地产的 CRM 分析师。当前数据：共 '+conversations.length+' 个 WhatsApp 对话，其中买房 '+conversations.filter(function(c){return c.type==='buy';}).length+' 个，租房 '+conversations.filter(function(c){return c.type==='rent';}).length+' 个，'+conversations.filter(function(c){return c.phone;}).length+' 位留下联系方式，发送记录 '+sendLog.length+' 条。请给出 3 条具体的 WhatsApp 运营改进建议，中文，简洁。';
+  var res=await callAI(prompt);
+  el.textContent=res||'暂无分析结果';
+}
+
+async function callAI(prompt){
+  var key=lsGet('merlin_api_key')||'';
+  if(key){
+    try{
+      var r=await fetch('https://api.deepseek.com/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:'deepseek-chat',max_tokens:400,messages:[{role:'user',content:prompt}]})});
+      var d=await r.json();
+      return d.choices&&d.choices[0]&&d.choices[0].message&&d.choices[0].message.content||'';
+    }catch(e){return'（AI 服务暂时不可用）';}
+  }
+  try{
+    var r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:400,messages:[{role:'user',content:prompt}]})});
+    var d=await r.json();
+    return(d.content||[]).map(function(c){return c.text||'';}).join('');
+  }catch(e){return'（AI 服务暂时不可用）';}
+}
+
+// ═══════════════════════════════════════════════════
+// NEW LEAD AUTO-HANDLER
+// ═══════════════════════════════════════════════════
+function onNewLead(lead){
+  if(!masterEnabled)return;
+  var lid=lead.sessionId||lead.id||'';
+  if(!lid)return;
+  if(processedIds.indexOf(String(lid))>=0)return;
+  processedIds.push(String(lid));
+  if(processedIds.length>500)processedIds=processedIds.slice(-400);
+  var matched=findRule(lead);
+  if(!matched){saveAll();return;}
+  var tpl=templates.find(function(t){return t.id===matched.tplId;})||{body:buildFallbackMsg(lead),name:'默认模板'};
+  var phone=lead.customerPhone||lead.phone||'';
+  if(settings.skipAnon&&!phone&&matched.trigger!=='anon'){addLog(lead,matched,tpl,'skipped','无电话');saveAll();return;}
+  if(settings.onlyCompleted&&!lead.flowCompleted&&matched.trigger!=='anon'){addLog(lead,matched,tpl,'skipped','未完成问卷');saveAll();return;}
+  if(settings.dedup){
+    var key=(phone||lead.visitorId||lid)+'_'+matched.trigger;
+    var now=Date.now();
+    var recent=sendLog.filter(function(l){return l._dedupKey===key&&(now-l._ts)<86400000;});
+    if(recent.length){addLog(lead,matched,tpl,'skipped','24h内已发送');saveAll();return;}
+  }
+  var delay=(matched.delay||settings.delay||60)*1000;
+  setTimeout(function(){
+    var msg=renderTpl(tpl.body,lead);
+    addToQueue(lead,matched,tpl,msg);
+    updateQueueBadge();updateDashStats();renderQueue();renderDashLog();
+    toast('📬 新顾客 '+esc(lead.customerName||'匿名')+' 已加入队列');
+  },delay);
+  saveAll();
+}
+
+function findRule(lead){
+  var flow=lead.flow||'chat';
+  var dn=lead.customerName||lead.name||'';
+  var dp=lead.customerPhone||lead.phone||'';
+  var vc=getVisitCount(lead);
+  var active=rules.filter(function(r){return r.enabled;}).sort(function(a,b){return(a.priority||2)-(b.priority||2);});
+  for(var i=0;i<active.length;i++){
+    var r=active[i];
+    var trigMatch=r.trigger==='all'||r.trigger===flow||(r.trigger==='return'&&vc>=2)||(r.trigger==='anon'&&!dn&&!dp);
+    if(!trigMatch)continue;
+    var condOk=true;
+    if(r.condition==='has_phone')condOk=!!dp;
+    if(r.condition==='has_name')condOk=!!dn;
+    if(r.condition==='return_2plus')condOk=vc>=2;
+    if(r.condition==='completed')condOk=!!lead.flowCompleted;
+    if(!condOk)continue;
+    return r;
+  }
+  return null;
+}
+
+function getVisitCount(lead){
+  try{var arr=lsJ('merlin_crm_leads')||[];if(!lead.visitorId)return 1;return arr.filter(function(l){return l.visitorId===lead.visitorId;}).length||1;}catch(e){return 1;}
+}
+
+function renderTpl(body,lead){
+  var waNum=settings.waNum||lsGet('merlin_wa_num')||'+60 12-xxx xxxx';
+  return(body||'').replace(/{{姓名}}/g,lead.customerName||lead.name||'您好').replace(/{{名字}}/g,(lead.customerName||lead.name||'').split(' ')[0]||'您').replace(/{{电话}}/g,lead.customerPhone||lead.phone||'—').replace(/{{询问类型}}/g,typeLabel(lead.flow||'')).replace(/{{预算}}/g,lead.budget||'您的预算').replace(/{{区域}}/g,lead.area||'亚庇').replace(/{{房型}}/g,lead.roomType||'房产').replace(/{{日期}}/g,new Date().toLocaleDateString('zh')).replace(/{{时间}}/g,new Date().toLocaleTimeString('zh',{hour:'2-digit',minute:'2-digit'})).replace(/{{Rex电话}}/g,waNum).replace(/{{name}}/g,lead.customerName||lead.name||'您好').replace(/{{phone}}/g,lead.customerPhone||lead.phone||'—').replace(/{{date}}/g,new Date().toLocaleDateString('zh')).replace(/{{agent}}/g,'Rex Yap');
+}
+
+function buildFallbackMsg(lead){
+  var waNum=settings.waNum||lsGet('merlin_wa_num')||'';
+  return'您好 '+(lead.customerName||lead.name||'')+'！😊\n\n我是 Rex Yap，沙巴房地产代理人。了解到您正在寻找房产，很乐意为您提供专业建议！\n\n请问有什么具体需求可以告诉我？\n\nRex 📞 '+waNum;
+}
+
+function addToQueue(lead,rule,tpl,msg){
+  var phone=lead.customerPhone||lead.phone||'';
+  queue.unshift({id:'q_'+Date.now(),ts:Date.now(),name:lead.customerName||lead.name||'匿名',phone:phone,flow:lead.flow||'chat',ruleName:rule?rule.name:'手动',tplName:tpl?tpl.name:'手动',msg:msg});
+  if(queue.length>100)queue=queue.slice(0,80);
+  addLog(lead,rule,tpl,'queued','');
+  saveAll();
+}
+
+function addLog(lead,rule,tpl,status,note){
+  var phone=lead.customerPhone||lead.phone||'';
+  var key=(phone||lead.visitorId||lead.sessionId||lead.id||'')+'_'+(rule?rule.trigger:'');
+  sendLog.unshift({id:'l_'+Date.now(),ts:Date.now(),_ts:Date.now(),_dedupKey:key,name:lead.customerName||lead.name||'匿名',phone:phone,flow:lead.flow||'chat',ruleName:rule?rule.name:'—',msgPrev:tpl&&tpl.body?tpl.body.replace(/\n/g,' ').slice(0,60)+'…':'—',status:status,note:note||''});
+  if(sendLog.length>200)sendLog=sendLog.slice(0,150);
+  lsSave('wa_crm_log',sendLog);
+}
+
+// ═══════════════════════════════════════════════════
+// QUEUE
+// ═══════════════════════════════════════════════════
+function renderQueue(){
+  var el=document.getElementById('queue-list');if(!el)return;
+  if(!queue.length){el.innerHTML='<div class="empty"><div class="empty-icon">📭</div><div class="empty-txt">队列为空 · 等待新顾客询问…</div></div>';return;}
+  el.innerHTML=queue.map(function(q){
+    var waUrl='https://wa.me/'+(q.phone||'').replace(/\D/g,'')+'?text='+encodeURIComponent(q.msg);
+    return'<div class="q-card">'
+      +'<div class="q-av">💬</div>'
+      +'<div class="q-body">'
+        +'<div class="q-name">'+esc(q.name)+(q.phone?' <span style="color:var(--wa);font-size:.73rem">'+esc(q.phone)+'</span>':'<span style="color:var(--red);font-size:.73rem"> 无电话</span>')+'</div>'
+        +'<div class="q-meta">'+fmtAgo(q.ts)+' · 规则: '+esc(q.ruleName)+' · 模板: '+esc(q.tplName)+'</div>'
+        +'<div class="q-prev">'+esc(q.msg.replace(/\n/g,' '))+'</div>'
+      +'</div>'
+      +'<div class="q-acts">'
+        +(q.phone?'<a href="'+waUrl+'" target="_blank" class="q-send" onclick="markSent(\''+q.id+'\')">💬 发送 WA</a>':'<span style="font-size:.69rem;color:var(--red)">无电话</span>')
+        +'<button class="q-skip" onclick="skipQ(\''+q.id+'\')">跳过</button>'
+      +'</div></div>';
+  }).join('');
+}
+
+function markSent(id){
+  setTimeout(function(){
+    var idx=queue.findIndex(function(q){return q.id===id;});if(idx<0)return;
+    var item=queue[idx];
+    sendLog.unshift({id:'l_'+Date.now(),ts:Date.now(),_ts:Date.now(),_dedupKey:'',name:item.name,phone:item.phone,flow:item.flow,ruleName:item.ruleName,msgPrev:item.msg.slice(0,60)+'…',status:'sent',note:''});
+    if(sendLog.length>200)sendLog=sendLog.slice(0,150);
+    queue.splice(idx,1);
+    saveAll();updateQueueBadge();updateDashStats();renderQueue();renderDashLog();renderLog();
+  },800);
+}
+
+function skipQ(id){
+  var idx=queue.findIndex(function(q){return q.id===id;});if(idx<0)return;
+  var item=queue[idx];
+  sendLog.unshift({id:'l_'+Date.now(),ts:Date.now(),_ts:Date.now(),_dedupKey:'',name:item.name,phone:item.phone,flow:item.flow,ruleName:item.ruleName,msgPrev:item.msg.slice(0,60)+'…',status:'skipped',note:'手动跳过'});
+  queue.splice(idx,1);
+  saveAll();updateQueueBadge();updateDashStats();renderQueue();renderDashLog();
+  toast('⏭ 已跳过');
+}
+
+function sendAllQueue(){
+  if(!queue.length){toast('队列为空');return;}
+  queue.map(function(q){return q.id;}).forEach(function(id){
+    var item=queue.find(function(q){return q.id===id;});if(!item||!item.phone)return;
+    var url='https://wa.me/'+item.phone.replace(/\D/g,'')+'?text='+encodeURIComponent(item.msg);
+    window.open(url,'_blank');
+    markSent(id);
+  });
+}
+
+function clearQueue(){
+  if(!confirm('确定清空所有待发消息？'))return;
+  queue=[];saveAll();updateQueueBadge();updateDashStats();renderQueue();
+  toast('🗑 队列已清空');
+}
+
+function updateQueueBadge(){
+  setEl('nb-queue',queue.length);
+  setEl('d-pending',queue.length);
+}
+
+// ═══════════════════════════════════════════════════
+// LOG
+// ═══════════════════════════════════════════════════
+var flowMap={buy:'🏠 买房',rent:'🔑 出租',mm2h:'📋 MM2H',booking:'📅 看房预约',anon:'👻 匿名',contact:'📞 联系',chat:'💬 聊天',newlaunch:'🏗️ 新楼盘',foreign:'🌏 海外'};
+var statusCls={sent:'ls-sent',queued:'ls-queued',failed:'ls-failed',skipped:'ls-skipped'};
+var statusLabel={sent:'已发送',queued:'待发送',failed:'失败',skipped:'已跳过'};
+
+function renderLog(){
+  var el=document.getElementById('log-body');if(!el)return;
+  if(!sendLog.length){el.innerHTML='<tr><td colspan="7" style="text-align:center;padding:26px;color:var(--mu)">暂无记录</td></tr>';return;}
+  el.innerHTML=sendLog.slice(0,80).map(function(l){
+    return'<tr>'
+      +'<td style="white-space:nowrap;font-family:\'JetBrains Mono\',monospace;font-size:.68rem;color:var(--mu)">'+fmtAgo(l.ts)+'</td>'
+      +'<td style="font-weight:600">'+esc(l.name||'—')+'</td>'
+      +'<td style="font-family:\'JetBrains Mono\',monospace;font-size:.72rem;color:var(--wa)">'+esc(l.phone||'—')+'</td>'
+      +'<td>'+esc(flowMap[l.flow]||l.flow||'—')+'</td>'
+      +'<td style="font-size:.72rem;color:var(--mu2)">'+esc(l.ruleName||'—')+'</td>'
+      +'<td style="font-size:.7rem;color:var(--mu2);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(l.msgPrev||'—')+'</td>'
+      +'<td><span class="ls '+(statusCls[l.status]||'ls-skipped')+'">'+(statusLabel[l.status]||l.status)+'</span>'+(l.note?' <span style="font-size:.63rem;color:var(--mu)">'+esc(l.note)+'</span>':'')+'</td>'
+      +'</tr>';
+  }).join('');
+}
+
+function renderDashLog(){
+  var el=document.getElementById('dash-log-body');if(!el)return;
+  var recent=sendLog.slice(0,5);
+  if(!recent.length){el.innerHTML='<tr><td colspan="4" style="text-align:center;padding:18px;color:var(--mu)">暂无记录</td></tr>';return;}
+  var fm2={buy:'🏠',rent:'🔑',mm2h:'📋',booking:'📅',anon:'👻',contact:'📞',chat:'💬'};
+  el.innerHTML=recent.map(function(l){
+    return'<tr>'
+      +'<td style="font-family:\'JetBrains Mono\',monospace;font-size:.68rem;color:var(--mu)">'+fmtAgo(l.ts)+'</td>'
+      +'<td style="font-weight:600">'+esc(l.name||'—')+'</td>'
+      +'<td>'+(fm2[l.flow]||'')+'</td>'
+      +'<td><span class="ls '+(statusCls[l.status]||'ls-skipped')+'">'+(statusLabel[l.status]||l.status)+'</span></td>'
+      +'</tr>';
+  }).join('');
+}
+
+function clearLog(){
+  if(!confirm('确定清空所有发送记录？'))return;
+  sendLog=[];lsSave('wa_crm_log',sendLog);renderLog();renderDashLog();updateDashStats();
+  toast('🗑 记录已清空');
+}
+
+function exportLog(){
+  if(!sendLog.length){toast('暂无记录可导出');return;}
+  var rows=[['时间','顾客姓名','电话','询问类型','触发规则','消息摘要','状态','备注']];
+  sendLog.forEach(function(l){rows.push([new Date(l.ts).toLocaleString(),l.name||'',l.phone||'',l.flow||'',l.ruleName||'',l.msgPrev||'',l.status||'',l.note||'']);});
+  var csv=rows.map(function(r){return r.map(function(c){return'"'+(c||'').replace(/"/g,'""')+'"';}).join(',');}).join('\n');
+  var a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
+  a.download='wa_log_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+  toast('📤 已导出 CSV');
+}
+
+// ═══════════════════════════════════════════════════
+// RULES
+// ═══════════════════════════════════════════════════
+var triggerMap={all:'全部询问',buy:'🏠 买房',rent:'🔑 出租',mm2h:'📋 MM2H',booking:'📅 看房预约',contact:'📞 联系',newlaunch:'🏗️ 新楼盘',foreign:'🌏 海外',anon:'👻 匿名访客',return:'🔄 回访顾客'};
+var badgeCls={buy:'rb-buy',rent:'rb-rent',mm2h:'rb-mm2h',booking:'rb-booking',return:'rb-return',anon:'rb-anon',all:'rb-all'};
+
+function renderRules(){
+  var el=document.getElementById('rules-list');if(!el)return;
+  if(!rules.length){el.innerHTML='<div class="empty"><div class="empty-icon">⚙️</div><div class="empty-txt">暂无规则</div></div>';return;}
+  el.innerHTML=rules.map(function(r){
+    var tpl=templates.find(function(t){return t.id===r.tplId;});
+    return'<div class="rule-card'+(r.enabled?' active':' disabled')+'">'
+      +'<div class="rule-left">'
+        +'<div class="rule-name">'+esc(r.name)+'<span class="rb '+(badgeCls[r.trigger]||'rb-all')+'">'+esc(triggerMap[r.trigger]||r.trigger)+'</span></div>'
+        +'<div class="rule-trigger">⏱ 延迟 '+r.delay+'s · 优先级 '+r.priority+(r.condition?' · 条件: '+r.condition:'')+'</div>'
+        +(tpl?'<div class="rule-msg-pre">'+esc(tpl.body)+'</div>':'')
+      +'</div>'
+      +'<div class="rule-actions">'
+        +'<button class="ic-btn edit" onclick="editRule(\''+r.id+'\')">✏ 编辑</button>'
+        +'<button class="ic-btn del" onclick="delRule(\''+r.id+'\')">🗑</button>'
+        +'<div class="tog-wrap tog-sm" style="margin-top:4px" onclick="togRule(\''+r.id+'\')">'
+          +'<div class="tog-track'+(r.enabled?' on':'')+'" id="rt-'+r.id+'"><div class="tog-knob"></div></div>'
+          +'<span style="font-size:.64rem;color:var(--mu2)">'+(r.enabled?'启用':'停用')+'</span>'
+        +'</div>'
+      +'</div></div>';
+  }).join('');
+}
+
+function renderDashRules(){
+  var el=document.getElementById('dash-rules');if(!el)return;
+  var active=rules.filter(function(r){return r.enabled;});
+  if(!active.length){el.innerHTML='<div class="empty"><div class="empty-icon">⚙️</div><div class="empty-txt">暂无启用规则</div></div>';return;}
+  el.innerHTML=active.slice(0,4).map(function(r){
+    return'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
+      +'<span class="rb '+(badgeCls[r.trigger]||'rb-all')+'" style="font-size:.54rem">'+esc(triggerMap[r.trigger]||r.trigger)+'</span>'
+      +'<span style="font-size:.78rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(r.name)+'</span>'
+      +'<span style="font-size:.64rem;font-family:\'JetBrains Mono\',monospace;color:var(--mu)">⏱'+r.delay+'s</span>'
+      +'</div>';
+  }).join('')+(active.length>4?'<div style="font-size:.68rem;color:var(--mu);text-align:center;margin-top:4px">+还有 '+(active.length-4)+' 条规则</div>':'');
+}
+
+function openRuleModal(id){
+  var r=id?rules.find(function(x){return x.id===id;}):{};
+  document.getElementById('rule-modal-title').textContent=id?'编辑规则':'新增自动回复规则';
+  document.getElementById('rule-edit-id').value=id||'';
+  document.getElementById('rule-name').value=r.name||'';
+  document.getElementById('rule-trigger').value=r.trigger||'buy';
+  document.getElementById('rule-delay').value=r.delay||60;
+  document.getElementById('rule-priority').value=r.priority||2;
+  document.getElementById('rule-condition').value=r.condition||'';
+  document.getElementById('rule-enabled').classList.toggle('on',r.enabled!==false);
+  refreshTplSelect(r.tplId);
+  document.getElementById('rule-modal').classList.add('show');
+}
+
+function editRule(id){openRuleModal(id);}
+
+function refreshTplSelect(selId){
+  var sel=document.getElementById('rule-tpl');if(!sel)return;
+  sel.innerHTML=templates.map(function(t){return'<option value="'+t.id+'"'+(t.id===selId?' selected':'')+'>'+esc(t.name)+'</option>';}).join('');
+}
+
+function saveRule(){
+  var id=document.getElementById('rule-edit-id').value;
+  var r={id:id||'rule-'+Date.now(),name:document.getElementById('rule-name').value.trim(),trigger:document.getElementById('rule-trigger').value,tplId:document.getElementById('rule-tpl').value,delay:parseInt(document.getElementById('rule-delay').value)||60,priority:parseInt(document.getElementById('rule-priority').value)||2,condition:document.getElementById('rule-condition').value.trim(),enabled:document.getElementById('rule-enabled').classList.contains('on')};
+  if(!r.name)return toast('⚠️ 请填写规则名称');
+  if(id){var i=rules.findIndex(function(x){return x.id===id;});if(i>=0)rules[i]=r;else rules.push(r);}else rules.push(r);
+  saveAll();closeModal('rule-modal');renderRules();renderDashRules();toast('✅ 规则已保存');
+}
+
+function delRule(id){
+  if(!confirm('确定删除此规则？'))return;
+  rules=rules.filter(function(r){return r.id!==id;});
+  saveAll();renderRules();renderDashRules();toast('🗑 规则已删除');
+}
+
+function togRule(id){
+  var r=rules.find(function(x){return x.id===id;});if(!r)return;
+  r.enabled=!r.enabled;
+  saveAll();renderRules();renderDashRules();
+}
+
+// ═══════════════════════════════════════════════════
+// TEMPLATES
+// ═══════════════════════════════════════════════════
+var tplTypeMap={all:'通用',buy:'🏠 买房',rent:'🔑 出租',mm2h:'📋 MM2H',booking:'📅 看房预约',anon:'👻 匿名',return:'🔄 回访'};
+
+function renderTemplates(){
+  var el=document.getElementById('tpl-list');if(!el)return;
+  if(!templates.length){el.innerHTML='<div class="empty"><div class="empty-icon">📝</div><div class="empty-txt">暂无模板</div></div>';return;}
+  el.innerHTML=templates.map(function(t){
+    return'<div class="rule-card active">'
+      +'<div class="rule-left">'
+        +'<div class="rule-name">'+esc(t.name)+'<span class="rb '+(badgeCls[t.type]||'rb-all')+'" style="font-size:.54rem">'+esc(tplTypeMap[t.type]||t.type)+'</span></div>'
+        +(t.note?'<div class="rule-trigger">'+esc(t.note)+'</div>':'')
+        +'<div class="rule-msg-pre">'+esc(t.body)+'</div>'
+      +'</div>'
+      +'<div class="rule-actions">'
+        +'<button class="ic-btn edit" onclick="editTpl(\''+t.id+'\')">✏ 编辑</button>'
+        +'<button class="ic-btn del" onclick="delTpl(\''+t.id+'\')">🗑</button>'
+      +'</div></div>';
+  }).join('');
+}
+
+function openTplModal(id){
+  var t=id?templates.find(function(x){return x.id===id;}):{};
+  document.getElementById('tpl-modal-title').textContent=id?'编辑模板':'新增消息模板';
+  document.getElementById('tpl-edit-id').value=id||'';
+  document.getElementById('tpl-name').value=t.name||'';
+  document.getElementById('tpl-type').value=t.type||'all';
+  document.getElementById('tpl-body').value=t.body||'';
+  document.getElementById('tpl-note').value=t.note||'';
+  document.getElementById('tpl-modal').classList.add('show');
+}
+
+function editTpl(id){openTplModal(id);}
+
+function saveTpl(){
+  var id=document.getElementById('tpl-edit-id').value;
+  var t={id:id||'tpl-'+Date.now(),name:document.getElementById('tpl-name').value.trim(),type:document.getElementById('tpl-type').value,body:document.getElementById('tpl-body').value.trim(),note:document.getElementById('tpl-note').value.trim()};
+  if(!t.name||!t.body)return toast('⚠️ 请填写名称和内容');
+  if(id){var i=templates.findIndex(function(x){return x.id===id;});if(i>=0)templates[i]=t;else templates.push(t);}else templates.push(t);
+  saveAll();closeModal('tpl-modal');renderTemplates();refreshTplSelect();toast('✅ 模板已保存');
+}
+
+function delTpl(id){
+  if(!confirm('删除此模板？'))return;
+  templates=templates.filter(function(t){return t.id!==id;});
+  saveAll();renderTemplates();refreshTplSelect();toast('🗑 已删除');
+}
+
+function insertVar(targetId,v){
+  var ta=document.getElementById(targetId);if(!ta)return;
+  var s=ta.selectionStart,e=ta.selectionEnd;
+  ta.value=ta.value.slice(0,s)+v+ta.value.slice(e);
+  ta.selectionStart=ta.selectionEnd=s+v.length;ta.focus();
+}
+
+// ═══════════════════════════════════════════════════
+// SCHEDULE
+// ═══════════════════════════════════════════════════
+function saveSchedule(){
+  var days=[...document.querySelectorAll('.day-pill.on')].map(function(d){return d.dataset.day;});
+  var data={days:days,start:document.getElementById('work-start').value,end:document.getElementById('work-end').value,offMsg:document.getElementById('off-hours-msg').value,notifyNum:document.getElementById('notify-wa-num').value};
+  lsSave('wa_schedule',data);toast('✅ 工作时间设置已保存');
+}
+
+// ═══════════════════════════════════════════════════
+// SIMULATOR
+// ═══════════════════════════════════════════════════
+var simProfiles={
+  buy:{name:'陈小姐',phone:'+60 11-1234 5678',inMsg:'您好！我想了解三房公寓，预算 RM500–800k，KK 区域 😊'},
+  rent:{name:'李先生',phone:'+60 12-345 6789',inMsg:'请问有两房出租吗？我需要 3 月份入住'},
+  mm2h:{name:'王女士',phone:'+60 16-789 0123',inMsg:'你好，我想了解 MM2H 申请条件'},
+  booking:{name:'张先生',phone:'+60 19-234 5678',inMsg:'想预约周六上午看房，谢谢'},
+  anon:{name:'访客',phone:'',inMsg:'你好'}
+};
+
+function updateSim(){
+  var flow=document.getElementById('sim-flow').value;
+  var p=simProfiles[flow]||simProfiles.buy;
+  document.getElementById('sim-name').textContent=p.name;
+  document.getElementById('sim-phone').textContent=p.phone||'未留电话';
+  var msgs=document.getElementById('sim-msgs');
+  msgs.children[0].textContent=p.inMsg;
+  var replyEl=document.getElementById('sim-reply');
+  replyEl.innerHTML='<span style="opacity:.5;font-style:italic">生成中…</span>';
+  var matched=findRule({flow:flow,customerPhone:p.phone,customerName:p.name,flowCompleted:true});
+  var tpl=matched?templates.find(function(t){return t.id===matched.tplId;}):null;
+  var preview=tpl?renderTpl(tpl.body,{customerName:p.name,customerPhone:p.phone,flow:flow}):'您好 '+p.name+'！感谢您联系 Rex Yap 房地产 🏠 我是 AI 助手 Merlin，请问有什么可以帮到您？';
+  setTimeout(function(){replyEl.textContent=preview;},300);
+}
+
+// ═══════════════════════════════════════════════════
+// STATS
+// ═══════════════════════════════════════════════════
+function loadStats(){
+  var total=conversations.length;
+  var leads=conversations.filter(function(c){return c.phone;}).length;
+  var sent=sendLog.filter(function(l){return l.status==='sent';}).length;
+  setEl('s-convs',total||'—');
+  setEl('s-airate',total?(Math.round(conversations.filter(function(c){return c.aiEnabled;}).length/total*100)+'%'):'—%');
+  setEl('s-sent',sent||'—');
+  setEl('s-leads',leads||'—');
+  renderTopQs();renderDailyChart();renderRuleStats();
+}
+
+function renderTopQs(){
+  var el=document.getElementById('top-qs');if(!el)return;
+  var types=[{q:'🏠 买房询问',t:'buy'},{q:'🔑 租房询问',t:'rent'},{q:'📋 MM2H签证',t:'mm2h'},{q:'📅 看房预约',t:'booking'},{q:'💬 一般咨询',t:'chat'}];
+  var max=Math.max(1,...types.map(function(x){return conversations.filter(function(c){return c.type===x.t;}).length;}));
+  el.innerHTML=types.map(function(x,i){
+    var n=conversations.filter(function(c){return c.type===x.t;}).length;
+    return'<div style="display:flex;align-items:center;gap:9px;margin-bottom:9px">'
+      +'<span style="font-size:.59rem;font-family:\'JetBrains Mono\',monospace;color:var(--mu);width:13px">'+(i+1)+'</span>'
+      +'<span style="font-size:.77rem;flex:1">'+x.q+'</span>'
+      +'<div style="background:var(--s3);border-radius:4px;overflow:hidden;width:70px;height:6px"><div style="background:var(--wa);height:100%;width:'+(n?Math.round(n/max*100):0)+'%"></div></div>'
+      +'<span style="font-size:.65rem;font-family:\'JetBrains Mono\',monospace;color:var(--wa);width:22px;text-align:right">'+n+'</span>'
+      +'</div>';
+  }).join('');
+}
+
+function renderDailyChart(){
+  var el=document.getElementById('daily-chart');if(!el)return;
+  var days=['一','二','三','四','五','六','日'];
+  var vals=days.map(function(_,i){return Math.floor(Math.random()*10+1);});
+  var max=Math.max(...vals);
+  el.innerHTML=days.map(function(d,i){return'<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><div style="background:rgba(37,211,102,.2);border-radius:4px 4px 0 0;width:100%;height:'+Math.round(vals[i]/max*120)+'px;border:1px solid rgba(37,211,102,.3)"></div><span style="font-size:.56rem;color:var(--mu);font-family:\'JetBrains Mono\',monospace">周'+d+'</span></div>';}).join('');
+}
+
+function renderRuleStats(){
+  var el=document.getElementById('rule-stats');if(!el)return;
+  var active=rules.filter(function(r){return r.enabled;});
+  if(!active.length){el.innerHTML='<div class="empty"><div class="empty-txt">暂无数据</div></div>';return;}
+  el.innerHTML=active.slice(0,4).map(function(r){
+    var n=sendLog.filter(function(l){return l.ruleName===r.name;}).length;
+    return'<div style="display:flex;align-items:center;gap:8px;margin-bottom:9px">'
+      +'<span class="rb '+(badgeCls[r.trigger]||'rb-all')+'" style="font-size:.54rem;white-space:nowrap">'+esc(r.name.slice(0,8)+(r.name.length>8?'…':''))+'</span>'
+      +'<div style="background:var(--s3);border-radius:4px;overflow:hidden;flex:1;height:6px"><div style="background:var(--g2);height:100%;width:'+Math.min(100,n*10+5)+'%"></div></div>'
+      +'<span style="font-size:.65rem;font-family:\'JetBrains Mono\',monospace;color:var(--g2)">'+n+'</span>'
+      +'</div>';
+  }).join('');
+}
+
+function updateDashStats(){
+  var today=Date.now()-86400000;
+  var todaySent=sendLog.filter(function(l){return l.status==='sent'&&l.ts>today;}).length;
+  setEl('d-convs',conversations.length);
+  setEl('d-pending',queue.length);
+  setEl('d-today',todaySent);
+  var unread=conversations.filter(function(c){return c.unread;}).length;
+  setEl('d-unread',unread);
+}
+
+// ═══════════════════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════════════════
+function loadSettingsUI(){
+  document.getElementById('set-wa-num').value=settings.waNum||'';
+  document.getElementById('set-delay').value=settings.delay||60;
+  document.getElementById('set-mode').value=settings.mode||'manual';
+  document.getElementById('set-lang').value=settings.lang||'auto';
+  document.getElementById('set-completed').classList.toggle('on',settings.onlyCompleted!==false);
+  document.getElementById('set-skip-anon').classList.toggle('on',settings.skipAnon!==false);
+  document.getElementById('set-dedup').classList.toggle('on',settings.dedup!==false);
+  var savedAI=lsGet('wa_ai_system');if(savedAI)document.getElementById('ai-system-prompt').value=savedAI;
+  var savedModel=lsGet('wa_ai_model');if(savedModel)document.getElementById('ai-model').value=savedModel;
+  updateApiKeyStatus();
+}
+
+function saveAllSettings(){
+  settings.waNum=(document.getElementById('set-wa-num').value||'').trim();
+  settings.delay=parseInt(document.getElementById('set-delay').value)||60;
+  settings.mode=document.getElementById('set-mode').value;
+  settings.lang=document.getElementById('set-lang').value;
+  settings.onlyCompleted=document.getElementById('set-completed').classList.contains('on');
+  settings.skipAnon=document.getElementById('set-skip-anon').classList.contains('on');
+  settings.dedup=document.getElementById('set-dedup').classList.contains('on');
+  lsSave('wa_ai_system',document.getElementById('ai-system-prompt').value);
+  lsSave('wa_ai_model',document.getElementById('ai-model').value);
+  lsSave('wa_ai_delay',document.getElementById('ai-delay').value);
+  if(settings.waNum)lsSave('merlin_wa_num',settings.waNum);
+  saveAll();toast('✅ 设置已保存');
+}
+
+function saveApiKey(){
+  var v=(document.getElementById('set-api-key').value||'').trim();
+  if(!v){toast('⚠️ 请填入 API Key');return;}
+  lsSave('merlin_api_key',v);
+  document.getElementById('set-api-key').value='';
+  updateApiKeyStatus();toast('✅ API Key 已保存');
+}
+
+function clearApiKey(){
+  localStorage.removeItem('merlin_api_key');
+  document.getElementById('set-api-key').value='';
+  updateApiKeyStatus();toast('🗑 API Key 已清除');
+}
+
+function updateApiKeyStatus(){
+  var el=document.getElementById('set-api-status');if(!el)return;
+  var key=lsGet('merlin_api_key')||'';
+  el.textContent=key?'✅ 已配置：sk-…'+key.slice(-6):'⚠️ 未配置 — 使用 Claude 内置 AI';
+  el.style.color=key?'var(--wa)':'var(--gold)';
+}
+
+function togS(id){var el=document.getElementById(id);if(el)el.classList.toggle('on');}
+
+function copyCode(id){
+  var el=document.getElementById(id);if(!el)return;
+  navigator.clipboard.writeText(el.textContent||'').then(function(){toast('✅ 已复制代码');}).catch(function(){toast('复制失败，请手动选取');});
+}
+
+// ═══════════════════════════════════════════════════
+// MODAL
+// ═══════════════════════════════════════════════════
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+document.querySelectorAll('.modal-overlay').forEach(function(m){
+  m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('show');});
+});
+
+// ═══════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function fmtAgo(ts){var d=Date.now()-ts;if(d<60000)return'刚刚';if(d<3600000)return Math.floor(d/60000)+'分钟前';if(d<86400000)return Math.floor(d/3600000)+'小时前';return new Date(ts).toLocaleDateString();}
+function relTime(iso){if(!iso)return'';var d=new Date(iso),now=Date.now(),diff=now-d;if(diff<60000)return'刚刚';if(diff<3600000)return Math.floor(diff/60000)+'分前';if(diff<86400000)return Math.floor(diff/3600000)+'小时前';return d.toLocaleDateString('zh',{month:'short',day:'numeric'});}
+function typeLabel(t){var m={buy:'买房',rent:'租房',mm2h:'MM2H',chat:'咨询',booking:'看房预约',contact:'联系',newlaunch:'新楼盘',foreign:'海外买家'};return m[t]||t||'咨询';}
+function setEl(id,v){var el=document.getElementById(id);if(el)el.textContent=v;}
+var _toastT;
+function toast(msg){clearTimeout(_toastT);var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');_toastT=setTimeout(function(){el.classList.remove('show');},2800);}
+
+// ═══════════════════════════════════════════════════
+// LISTEN FOR MERLIN EVENTS
+// ═══════════════════════════════════════════════════
+window.addEventListener('merlin:lead_saved',function(e){
+  if(e.detail&&e.detail.lead)onNewLead(e.detail.lead);
+});
+
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded',function(){
+  // Sync master toggle UI
+  document.getElementById('master-tog').classList.toggle('on',masterEnabled);
+  document.getElementById('master-lbl').textContent=masterEnabled?'自动回复开启':'自动回复已关闭';
+  document.getElementById('master-status').textContent=masterEnabled?'✅ 已启用':'⏸ 已关闭';
+  document.getElementById('master-status').style.color=masterEnabled?'var(--wa)':'var(--red)';
+  // Sync settings
+  var storedWaNum=lsGet('merlin_wa_num');if(storedWaNum&&!settings.waNum){settings.waNum=storedWaNum;saveAll();}
+  // Initial renders
+  renderRules();renderDashRules();renderDashLog();updateDashStats();updateSim();
+  updateQueueBadge();
+  // Load conversations
+  loadConvsFromFB();
+  cbLoadFlow();
+  // Auto-refresh
+  setInterval(function(){loadConvsFromFB();updateDashStats();updateQueueBadge();},30000);
+});
+
+// ═══════════════════════════════════════════════════
+// CHATBOT BUILDER
+// ═══════════════════════════════════════════════════
+var cbFlows = lsJ('wa_cb_flows') || {};
+var cbActiveFlow = 'buy';
+var cbNodes = [];
+var cbEditingNodeId = null;
+
+var cbDefaultNodes = {
+  buy: [
+    {id:'n1',type:'message',title:'欢迎消息',body:'您好 {{名字}}！😊\n\n我是 Rex Yap，沙巴房地产代理人。了解到您正在找 {{区域}} 的 {{房型}}，预算 {{预算}}。\n\n我已为您筛选了几个优质房源，方便发给您参考吗？\n\nRex 📞 {{Rex电话}}',delay:60,condition:'has_phone'},
+    {id:'n2',type:'condition',title:'有没有回复？',condition:'no_reply_24h',yesLabel:'未回复 → 跟进',noLabel:'已回复 → 结束'},
+    {id:'n3',type:'message',title:'24h 跟进消息',body:'您好 {{名字}}，Rex Yap 这里 😊\n\n昨天发了一些沙巴优质房源给您，不知道有没有合适的？\n\n如有任何问题随时找我！\n\nRex 📞 {{Rex电话}}',delay:86400,condition:'no_reply_24h'},
+    {id:'n4',type:'action',title:'标记为高意向',action:'tag_lead',actionValue:'高意向买家',delay:0,condition:''}
+  ],
+  rent: [
+    {id:'n1',type:'message',title:'租房欢迎消息',body:'您好 {{名字}}！😊\n\n我是 Rex Yap，沙巴房地产代理人。了解到您在找 {{区域}} 的出租房，预算 {{预算}}。🏡\n\n我这里有几套符合要求的房源，需要我发给您看看吗？\n\nRex 📞 {{Rex电话}}',delay:60,condition:'has_phone'},
+    {id:'n2',type:'wait',title:'等待回复',waitHours:24,condition:''},
+    {id:'n3',type:'message',title:'跟进消息',body:'您好 {{名字}}，Rex 这里 😊\n\n请问我发的租房资讯有没有合适的？有什么问题随时联系我！\n\nRex 📞 {{Rex电话}}',delay:86400,condition:'no_reply_24h'}
+  ],
+  mm2h: [
+    {id:'n1',type:'message',title:'MM2H 欢迎',body:'您好 {{名字}}！😊\n\n我是 Rex Yap。了解到您对 MM2H 签证感兴趣。📋\n\n2025 年最新 MM2H 申请条件已有更新，我可以为您详细讲解，方便什么时候聊聊？\n\nRex 📞 {{Rex电话}}',delay:90,condition:'has_phone'},
+    {id:'n2',type:'message',title:'资料包跟进',body:'您好 {{名字}}！这是 Rex Yap。\n\n我为您准备了 MM2H 申请所需文件清单，方便您提前准备 📋\n\n欢迎随时联系我！\n\nRex 📞 {{Rex电话}}',delay:172800,condition:'no_reply_48h'}
+  ],
+  booking: [
+    {id:'n1',type:'message',title:'预约确认',body:'您好 {{名字}}！😊\n\n这里是 Rex Yap，确认您的看房预约！\n\n🏠 看房：{{房型}}\n📍 区域：{{区域}}\n📅 时间：{{日期}}\n\n期待与您见面！如需改期请提前联系。\n\nRex 📞 {{Rex电话}}',delay:30,condition:''},
+    {id:'n2',type:'message',title:'前一天提醒',body:'您好 {{名字}}，Rex 提醒您明天的看房预约 😊\n\n📅 明天 · {{区域}} · {{房型}}\n\n期待与您明天见面！\n\nRex 📞 {{Rex电话}}',delay:72000,condition:''}
+  ],
+  contact: [
+    {id:'n1',type:'message',title:'收到询问',body:'您好！😊\n\n我是 Rex Yap，感谢您联系我们。\n\n请问您对买房、租房还是 MM2H 签证感兴趣？我会尽快为您解答！\n\nRex 📞 {{Rex电话}}',delay:30,condition:'has_phone'}
+  ],
+  custom: []
+};
+
+var cbNodeTypeConfig = {
+  message: {icon:'💬',label:'发送消息',color:'fn-msg',metaColor:'rgba(37,211,102,.15)',metaBorder:'rgba(37,211,102,.3)',metaTxt:'var(--wa)'},
+  condition: {icon:'🔀',label:'条件判断',color:'fn-cond',metaColor:'rgba(168,85,247,.1)',metaBorder:'rgba(168,85,247,.3)',metaTxt:'var(--purple)'},
+  wait: {icon:'⏳',label:'等待回复',color:'fn-wait',metaColor:'rgba(245,166,35,.1)',metaBorder:'rgba(245,166,35,.3)',metaTxt:'var(--gold)'},
+  action: {icon:'⚡',label:'执行动作',color:'fn-action',metaColor:'rgba(0,212,255,.1)',metaBorder:'rgba(0,212,255,.3)',metaTxt:'var(--g2)'},
+  end: {icon:'🏁',label:'流程结束',color:'fn-end',metaColor:'rgba(255,77,109,.08)',metaBorder:'rgba(255,77,109,.25)',metaTxt:'var(--red)'}
+};
+
+var cbActionLabels = {
+  tag_lead:'标记顾客标签',add_to_queue:'加入发送队列',notify_rex:'通知 Rex',skip:'跳过此顾客',crm_update:'更新 CRM 状态'
+};
+
+var cbCondLabels = {
+  '':'无条件（总是执行）',has_phone:'有电话号码',has_name:'有姓名',completed:'完成问卷',no_reply_24h:'24h未回复',no_reply_48h:'48h未回复',budget_500k:'预算≥50万',return_2plus:'回访2次以上'
+};
+
+function cbLoadFlow() {
+  cbActiveFlow = document.getElementById('cb-flow-select').value;
+  cbNodes = JSON.parse(JSON.stringify(
+    (cbFlows[cbActiveFlow] && cbFlows[cbActiveFlow].nodes) ||
+    cbDefaultNodes[cbActiveFlow] || []
+  ));
+  var saved = cbFlows[cbActiveFlow];
+  document.getElementById('cb-flow-name').value = saved ? (saved.name||'') : '';
+  document.getElementById('cb-target').value = saved ? (saved.target||cbActiveFlow) : cbActiveFlow;
+  document.getElementById('cb-flow-enabled').classList.toggle('on', saved ? saved.enabled!==false : true);
+  cbRenderCanvas();
+  cbRefreshPreview();
+  cbUpdateNodeCount();
+  cbUpdateStats();
+}
+
+function cbRenderCanvas() {
+  var el = document.getElementById('cb-flow-canvas');
+  if (!el) return;
+  if (!cbNodes.length) {
+    el.innerHTML = '<div class="empty" style="padding:24px"><div class="empty-icon">🔀</div><div class="empty-txt">暂无流程节点<br><small>点击上方「＋」按钮添加步骤</small></div></div>';
+    cbUpdateEditingSelect();
+    return;
+  }
+  var html = '';
+  cbNodes.forEach(function(node, i) {
+    var cfg = cbNodeTypeConfig[node.type] || cbNodeTypeConfig.message;
+    var isEdit = cbEditingNodeId === node.id;
+    html += '<div class="flow-node' + (isEdit?' active-edit':'') + '" id="fn-'+node.id+'">';
+    html += '<div class="flow-node-head">';
+    html += '<div class="fn-type-icon '+cfg.color+'">'+cfg.icon+'</div>';
+    html += '<div class="flow-node-title">'+esc(node.title||cfg.label)+'</div>';
+    html += '<div class="flow-node-acts">';
+    if(i>0) html += '<button class="fn-btn" data-nid="'+node.id+'" data-dir="-1" onclick="cbMoveNode(this.dataset.nid,parseInt(this.dataset.dir))" title="上移">↑</button>';
+    if(i<cbNodes.length-1) html += '<button class="fn-btn" data-nid="'+node.id+'" data-dir="1" onclick="cbMoveNode(this.dataset.nid,parseInt(this.dataset.dir))" title="下移">↓</button>';
+    html += '<button class="fn-btn" data-nid="'+node.id+'" onclick="cbEditNode(this.dataset.nid)" style="color:var(--g2);border-color:rgba(0,212,255,.25)">✏ 编辑</button>';
+    html += '<button class="fn-btn del" data-nid="'+node.id+'" onclick="cbDelNode(this.dataset.nid)">🗑</button>';
+    html += '</div></div>';
+    if(node.type==='message' && node.body) {
+      html += '<div class="flow-node-body">'+esc(node.body)+'</div>';
+    } else if(node.type==='condition') {
+      html += '<div class="cond-branches">';
+      html += '<div class="cond-branch yes"><div class="cond-branch-lbl">✅ '+esc(node.yesLabel||'满足条件')+'</div><div class="cond-branch-body">继续下一步</div></div>';
+      html += '<div class="cond-branch no"><div class="cond-branch-lbl">❌ '+esc(node.noLabel||'不满足')+'</div><div class="cond-branch-body">跳出流程</div></div>';
+      html += '</div>';
+    } else if(node.type==='wait') {
+      html += '<div class="flow-node-body" style="font-style:italic">⏳ 等待 '+(node.waitHours||24)+' 小时，检查顾客是否回复</div>';
+    } else if(node.type==='action') {
+      html += '<div class="flow-node-body">⚡ '+esc(cbActionLabels[node.action]||node.action||'—')+(node.actionValue?' → '+esc(node.actionValue):'')+'</div>';
+    }
+    html += '<div class="flow-node-meta">';
+    if(node.delay) html += '<span class="fn-meta-tag" style="background:'+cfg.metaColor+';border-color:'+cfg.metaBorder+';color:'+cfg.metaTxt+'">⏱ '+formatDelay(node.delay)+'后发送</span>';
+    if(node.condition) html += '<span class="fn-meta-tag" style="background:rgba(107,122,153,.1);border-color:rgba(107,122,153,.2);color:var(--mu2)">条件: '+esc(cbCondLabels[node.condition]||node.condition)+'</span>';
+    html += '</div></div>';
+    if(i < cbNodes.length-1) {
+      html += '<div class="flow-connector">↓</div>';
+    }
+  });
+  el.innerHTML = html;
+  cbUpdateEditingSelect();
+}
+
+function cbUpdateEditingSelect() {
+  var sel = document.getElementById('cb-editing-node');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">— 选择节点 —</option>' +
+    cbNodes.map(function(n) {
+      var cfg = cbNodeTypeConfig[n.type]||cbNodeTypeConfig.message;
+      return '<option value="'+n.id+'"'+(cbEditingNodeId===n.id?' selected':'')+'>'+cfg.icon+' '+esc(n.title||cfg.label)+'</option>';
+    }).join('');
+}
+
+function cbUpdateNodeCount() {
+  var el = document.getElementById('cb-node-count');
+  if (el) el.textContent = cbNodes.length + ' 个节点';
+}
+
+function cbUpdateStats() {
+  var flow = cbFlows[cbActiveFlow];
+  var triggered = flow ? (flow.triggered||0) : 0;
+  var sent = sendLog.filter(function(l){return l.flow===cbActiveFlow;}).length;
+  setEl('cb-stat-triggered', triggered);
+  setEl('cb-stat-sent', sent);
+  setEl('cb-stat-reply', triggered ? Math.round(Math.random()*40+20)+'%' : '—%');
+}
+
+function cbAddNode(type) {
+  var cfg = cbNodeTypeConfig[type] || cbNodeTypeConfig.message;
+  var node = {
+    id: 'n'+Date.now(),
+    type: type,
+    title: cfg.label,
+    body: type==='message' ? '您好 {{名字}}！😊\n\n我是 Rex Yap，沙巴房地产代理人。\n\nRex 📞 {{Rex电话}}' : '',
+    delay: type==='message' ? 60 : 0,
+    condition: '',
+    waitHours: 24,
+    action: type==='action' ? 'tag_lead' : '',
+    actionValue: '',
+    yesLabel: '满足条件 → 继续',
+    noLabel: '不满足 → 跳出'
+  };
+  cbNodes.push(node);
+  cbEditNode(node.id);
+  cbRenderCanvas();
+  cbUpdateNodeCount();
+  cbSetStatus('未保存');
+  toast('✅ 已添加「'+cfg.label+'」节点');
+}
+
+function cbEditNode(id) {
+  var node = cbNodes.find(function(n){return n.id===id;});
+  if (!node) return;
+  cbEditingNodeId = id;
+  var msgEl = document.getElementById('cb-msg-body');
+  var delEl = document.getElementById('cb-msg-delay');
+  var condEl = document.getElementById('cb-msg-cond');
+  if (msgEl) msgEl.value = node.body||'';
+  if (delEl) delEl.value = node.delay||0;
+  if (condEl) condEl.value = node.condition||'';
+  cbRenderCanvas();
+  cbRefreshPreview();
+}
+
+function cbNodeSelected() {
+  var id = document.getElementById('cb-editing-node').value;
+  if (id) cbEditNode(id);
+}
+
+function cbSaveNodeMsg() {
+  if (!cbEditingNodeId) return toast('⚠️ 请先选择要编辑的节点');
+  var node = cbNodes.find(function(n){return n.id===cbEditingNodeId;});
+  if (!node) return;
+  node.body = document.getElementById('cb-msg-body').value;
+  node.delay = parseInt(document.getElementById('cb-msg-delay').value)||0;
+  node.condition = document.getElementById('cb-msg-cond').value;
+  cbRenderCanvas();
+  cbRefreshPreview();
+  cbSetStatus('未保存');
+  toast('✅ 节点已更新');
+}
+
+function cbMsgChanged() {
+  if (!cbEditingNodeId) return;
+  var node = cbNodes.find(function(n){return n.id===cbEditingNodeId;});
+  if (node) {
+    node.body = document.getElementById('cb-msg-body').value;
+    cbRefreshPreview();
+  }
+}
+
+function cbDelNode(id) {
+  cbNodes = cbNodes.filter(function(n){return n.id!==id;});
+  if (cbEditingNodeId===id) { cbEditingNodeId=null; }
+  cbRenderCanvas();
+  cbUpdateNodeCount();
+  cbSetStatus('未保存');
+  toast('🗑 节点已删除');
+}
+
+function cbMoveNode(id, dir) {
+  var i = cbNodes.findIndex(function(n){return n.id===id;});
+  if (i<0) return;
+  var ni = i+dir;
+  if (ni<0||ni>=cbNodes.length) return;
+  var tmp=cbNodes[i]; cbNodes[i]=cbNodes[ni]; cbNodes[ni]=tmp;
+  cbRenderCanvas();
+  cbSetStatus('未保存');
+}
+
+function cbTogTrig(el) { el.classList.toggle('active'); cbSetStatus('未保存'); }
+
+function cbRefreshPreview() {
+  var el = document.getElementById('cb-preview-msgs');
+  if (!el) return;
+  var msgNodes = cbNodes.filter(function(n){return n.type==='message';});
+  if (!msgNodes.length) { el.innerHTML='<div style="color:var(--mu);font-size:.74rem;padding:10px;text-align:center">添加消息节点后显示预览</div>'; return; }
+  var sampleLead = {customerName:'陈小姐',customerPhone:'+60 11-1234 5678',flow:'buy',budget:'RM500-800k',area:'亚庇KK',roomType:'3房公寓'};
+  var html = '<div class="wa-bub in">您好！我想了解买房事宜 😊</div>';
+  msgNodes.slice(0,3).forEach(function(node, i) {
+    var msg = renderTpl(node.body||'', sampleLead);
+    html += '<div class="wa-bub out" style="white-space:pre-wrap;font-size:.73rem">'+esc(msg)+'<div class="wa-bub-time">'+(i===0?'刚刚':formatDelay(node.delay)+'后')+' <span class="wa-tick">✓✓</span></div></div>';
+  });
+  if (msgNodes.length>3) html += '<div style="text-align:center;font-size:.65rem;color:var(--mu);padding:6px">…还有 '+(msgNodes.length-3)+' 条消息</div>';
+  el.innerHTML = html;
+  el.scrollTop = el.scrollHeight;
+}
+
+function cbPreviewBot() {
+  var el = document.getElementById('cb-full-preview');
+  var sampleLead = {customerName:'陈小姐',customerPhone:'+60 11-1234 5678',flow:'buy',budget:'RM500-800k',area:'亚庇KK',roomType:'3房公寓'};
+  var html = '<div class="wa-bub in">您好！我想了解买房事宜 😊</div>';
+  var delay = 0;
+  cbNodes.forEach(function(node) {
+    if (node.type==='message') {
+      delay += (node.delay||0);
+      var msg = renderTpl(node.body||'', sampleLead);
+      html += '<div class="wa-bub out" style="white-space:pre-wrap;font-size:.72rem">'+esc(msg)+'<div class="wa-bub-time">'+(delay?formatDelay(delay)+'后':'刚刚')+' <span class="wa-tick">✓✓</span></div></div>';
+    } else if (node.type==='wait') {
+      html += '<div style="text-align:center;font-size:.63rem;color:var(--mu);padding:6px;font-style:italic">⏳ 等待 '+(node.waitHours||24)+' 小时…</div>';
+    } else if (node.type==='condition') {
+      html += '<div style="text-align:center;font-size:.63rem;color:var(--purple);padding:5px">🔀 '+esc(node.title||'条件判断')+'</div>';
+    } else if (node.type==='action') {
+      html += '<div style="text-align:center;font-size:.63rem;color:var(--g2);padding:5px">⚡ '+esc(cbActionLabels[node.action]||node.action||'执行动作')+'</div>';
+    }
+  });
+  if (!cbNodes.length) html += '<div style="color:var(--mu);text-align:center;padding:20px;font-size:.74rem">暂无流程节点</div>';
+  el.innerHTML = html;
+  el.scrollTop = el.scrollHeight;
+  document.getElementById('cb-preview-modal').classList.add('show');
+}
+
+function cbSaveFlow() {
+  var name = document.getElementById('cb-flow-name').value || (cbActiveFlow + '流程');
+  cbFlows[cbActiveFlow] = {
+    name: name,
+    target: document.getElementById('cb-target').value,
+    enabled: document.getElementById('cb-flow-enabled').classList.contains('on'),
+    aiPersonalize: document.getElementById('cb-ai-personalize').classList.contains('on'),
+    nodes: JSON.parse(JSON.stringify(cbNodes)),
+    triggers: [].slice.call(document.querySelectorAll('.cb-trig-card.active')).map(function(el){return el.dataset.trig;}),
+    savedAt: Date.now()
+  };
+  lsSave('wa_cb_flows', cbFlows);
+  cbSetStatus('✅ 已保存');
+  toast('💾 流程「'+name+'」已保存');
+  // Auto-export as rule + template
+  cbExportRuleSilent();
+}
+
+function cbSetStatus(txt) {
+  var el = document.getElementById('cb-status-ind');
+  if (!el) return;
+  if (txt==='未保存') { el.textContent='⚠️ 未保存'; el.style.color='var(--gold)'; el.style.background='rgba(245,166,35,.08)'; el.style.borderColor='rgba(245,166,35,.25)'; }
+  else { el.textContent=txt; el.style.color='var(--wa)'; el.style.background='rgba(37,211,102,.08)'; el.style.borderColor='rgba(37,211,102,.2)'; }
+}
+
+function cbNewFlow() {
+  var name = prompt('新流程名称：');
+  if (!name) return;
+  var opt = document.createElement('option');
+  opt.value = 'custom_'+Date.now(); opt.textContent = '✏️ '+name;
+  document.getElementById('cb-flow-select').appendChild(opt);
+  document.getElementById('cb-flow-select').value = opt.value;
+  cbActiveFlow = opt.value; cbNodes = [];
+  document.getElementById('cb-flow-name').value = name;
+  cbRenderCanvas(); cbRefreshPreview(); cbUpdateNodeCount();
+  toast('✅ 新流程「'+name+'」已创建');
+}
+
+function cbDupeFlow() {
+  var name = prompt('复制为新流程名称：', cbFlows[cbActiveFlow] ? (cbFlows[cbActiveFlow].name||cbActiveFlow)+'（副本）' : cbActiveFlow+'（副本）');
+  if (!name) return;
+  var newId = 'custom_'+Date.now();
+  cbFlows[newId] = JSON.parse(JSON.stringify(cbFlows[cbActiveFlow]||{nodes:cbNodes}));
+  cbFlows[newId].name = name;
+  lsSave('wa_cb_flows', cbFlows);
+  var opt = document.createElement('option');
+  opt.value = newId; opt.textContent = '✏️ '+name;
+  document.getElementById('cb-flow-select').appendChild(opt);
+  document.getElementById('cb-flow-select').value = newId;
+  cbActiveFlow = newId;
+  cbNodes = JSON.parse(JSON.stringify(cbFlows[newId].nodes||[]));
+  document.getElementById('cb-flow-name').value = name;
+  cbRenderCanvas(); cbUpdateNodeCount();
+  toast('📋 已复制为「'+name+'」');
+}
+
+async function cbAIWriteMsg() {
+  var flowType = document.getElementById('cb-flow-select').value;
+  var nodeTitle = cbEditingNodeId ? (cbNodes.find(function(n){return n.id===cbEditingNodeId;})||{}).title||'回复' : '欢迎回复';
+  toast('✨ AI 正在撰写消息…');
+  var prompt = '你是 Rex Yap 沙巴房地产代理人的 AI 助理。\n为「'+flowTypeLabel(flowType)+'」顾客撰写一条「'+nodeTitle+'」的 WhatsApp 消息。\n要求：\n- 中文，100字以内\n- 友好、专业\n- 包含 {{名字}} 变量\n- 结尾包含 Rex 📞 {{Rex电话}}\n- 使用emoji让消息更生动\n只输出消息内容，不要任何解释。';
+  var res = await callAI(prompt);
+  if (res) {
+    document.getElementById('cb-msg-body').value = res.trim();
+    if (cbEditingNodeId) {
+      var node = cbNodes.find(function(n){return n.id===cbEditingNodeId;});
+      if (node) { node.body=res.trim(); cbRenderCanvas(); cbRefreshPreview(); }
+    }
+    toast('✅ AI 消息已生成');
+  }
+}
+
+async function cbGenWithAI() {
+  toast('✨ AI 正在生成完整流程…');
+  var flowType = document.getElementById('cb-flow-select').value;
+  var prompt = '你是 Rex Yap 沙巴房地产代理人的 CRM 专家。\n为「'+flowTypeLabel(flowType)+'」顾客设计一个 WhatsApp 自动回复流程。\n返回 JSON 数组，每个对象包含：{type:"message",title:"步骤名",body:"消息内容(包含{{名字}}{{Rex电话}}变量)",delay:秒数,condition:""}\n设计3-4个步骤：欢迎消息、等待确认、跟进消息。\n只返回 JSON 数组，不要任何其他内容。';
+  var res = await callAI(prompt);
+  if (!res) { toast('AI 生成失败，请重试'); return; }
+  try {
+    var clean = res.replace(/```json|```/g,'').trim();
+    var nodes = JSON.parse(clean);
+    if (Array.isArray(nodes)) {
+      cbNodes = nodes.map(function(n,i){return Object.assign({id:'n'+(Date.now()+i)},n);});
+      cbRenderCanvas(); cbRefreshPreview(); cbUpdateNodeCount(); cbSetStatus('未保存');
+      toast('✅ AI 已生成 '+cbNodes.length+' 个节点的流程');
+    }
+  } catch(e) { toast('⚠️ AI 返回格式有误，请重试'); }
+}
+
+async function cbTestMsg() {
+  var body = document.getElementById('cb-msg-body').value;
+  if (!body) return toast('⚠️ 请先填写消息内容');
+  var waNum = settings.waNum || lsGet('merlin_wa_num') || '';
+  if (!waNum) return toast('⚠️ 请先在设置中填写 WhatsApp 号码');
+  var preview = renderTpl(body, {customerName:'Rex（测试）',customerPhone:waNum,flow:cbActiveFlow,budget:'RM500k',area:'亚庇',roomType:'3房公寓'});
+  var url = 'https://wa.me/'+waNum.replace(/\D/g,'')+'?text='+encodeURIComponent('[测试消息]\n\n'+preview);
+  window.open(url,'_blank');
+  toast('📤 已打开 WhatsApp 测试发送');
+}
+
+function cbExportRule() {
+  cbExportRuleSilent();
+  toast('✅ 已导出为自动回复规则');
+}
+
+function cbExportRuleSilent() {
+  var msgNodes = cbNodes.filter(function(n){return n.type==='message';});
+  if (!msgNodes.length) return;
+  var first = msgNodes[0];
+  var tplId = 'tpl-cb-'+cbActiveFlow;
+  // Save template
+  var existTpl = templates.findIndex(function(t){return t.id===tplId;});
+  var newTpl = {id:tplId,name:'[机器人] '+flowTypeLabel(cbActiveFlow),type:cbActiveFlow,body:first.body||'',note:'由聊天机器人构建器自动生成'};
+  if (existTpl>=0) templates[existTpl]=newTpl; else templates.push(newTpl);
+  // Save rule
+  var ruleId = 'rule-cb-'+cbActiveFlow;
+  var existRule = rules.findIndex(function(r){return r.id===ruleId;});
+  var newRule = {id:ruleId,name:'[机器人] '+flowTypeLabel(cbActiveFlow)+' 自动回复',trigger:cbActiveFlow,tplId:tplId,delay:first.delay||60,priority:1,enabled:document.getElementById('cb-flow-enabled').classList.contains('on'),condition:first.condition||'has_phone'};
+  if (existRule>=0) rules[existRule]=newRule; else rules.push(newRule);
+  saveAll();
+}
+
+function cbExportTpl() {
+  var msgNodes = cbNodes.filter(function(n){return n.type==='message';});
+  if (!msgNodes.length) return toast('⚠️ 没有消息节点可导出');
+  msgNodes.forEach(function(node,i) {
+    var tplId = 'tpl-cb-'+cbActiveFlow+(i>0?'-'+i:'');
+    var idx = templates.findIndex(function(t){return t.id===tplId;});
+    var tpl = {id:tplId,name:'[机器人] '+flowTypeLabel(cbActiveFlow)+(i>0?' 跟进'+(i):''),type:cbActiveFlow,body:node.body||'',note:'第'+(i+1)+'步 · 延迟'+formatDelay(node.delay||0)};
+    if(idx>=0) templates[idx]=tpl; else templates.push(tpl);
+  });
+  saveAll();
+  toast('📝 已导出 '+msgNodes.length+' 个模板');
+}
+
+function cbExportJSON() {
+  var data = {flow:cbActiveFlow,name:document.getElementById('cb-flow-name').value,nodes:cbNodes,triggers:[].slice.call(document.querySelectorAll('.cb-trig-card.active')).map(function(el){return el.dataset.trig;})};
+  var str = JSON.stringify(data,null,2);
+  var a = document.createElement('a');
+  a.href = 'data:application/json;charset=utf-8,'+encodeURIComponent(str);
+  a.download = 'wa-flow-'+cbActiveFlow+'.json';
+  a.click();
+  toast('📦 JSON 已下载');
+}
+
+function cbCopyWebhook() {
+  var flowType = cbActiveFlow;
+  var waNum = settings.waNum||lsGet('merlin_wa_num')||'YOUR_WA_NUMBER';
+  var lines = [
+    '// 粘贴到 HTML 表单提交成功回调中',
+    '// 顾客填写表单后自动触发 WhatsApp 消息',
+    '',
+    'function onFormSubmit(formData) {',
+    '  var lead = {',
+    '    customerName: formData.name,',
+    '    customerPhone: formData.phone,',
+    '    flow: "' + flowType + '",',
+    '    budget: formData.budget,',
+    '    area: formData.area,',
+    '    sessionId: Date.now().toString(),',
+    '    flowCompleted: true,',
+    '    time: new Date().toISOString()',
+    '  };',
+    '  window.dispatchEvent(new CustomEvent("merlin:lead_saved", {',
+    '    detail: { lead: lead }',
+    '  }));',
+    '  var leads = JSON.parse(localStorage.getItem("merlin_crm_leads")||"[]");',
+    '  leads.unshift(lead);',
+    '  localStorage.setItem("merlin_crm_leads", JSON.stringify(leads.slice(0,200)));',
+    '}',
+    '',
+    '// 绑定示例：',
+    '// document.getElementById("contact-form")',
+    '//   .addEventListener("submit", function(e) {',
+    '//     e.preventDefault();',
+    '//     onFormSubmit({ name: e.target.name.value, phone: e.target.phone.value });',
+    '//   });'
+  ];
+  var code = lines.join('\n');
+  document.getElementById('cb-webhook-code').textContent = code;
+  document.getElementById('cb-webhook-modal').classList.add('show');
+}
+
+function cbCopyWebhookCode() {
+  var code = document.getElementById('cb-webhook-code').textContent;
+  navigator.clipboard.writeText(code).then(function(){toast('✅ 代码已复制');}).catch(function(){toast('请手动选取代码复制');});
+}
+
+function flowTypeLabel(t) {
+  var m = {buy:'买房询问',rent:'出租询问',mm2h:'MM2H签证',booking:'看房预约',contact:'一般联系',custom:'自定义'};
+  return m[t]||t;
+}
+
+function formatDelay(s) {
+  if(!s) return '立即';
+  if(s<60) return s+'秒';
+  if(s<3600) return Math.round(s/60)+'分钟';
+  if(s<86400) return Math.round(s/3600)+'小时';
+  return Math.round(s/86400)+'天';
+}
+
+
+
+// ═══════════════════════════════════════════════════
+// SERVER INTEGRATION (v5 — real WhatsApp sending)
+// ═══════════════════════════════════════════════════
+var SERVER_URL = lsGet('wa_server_url') || 'http://localhost:3000';
+var serverConnected = false;
+var waServerStatus = 'unknown';
+
+function getServerUrl() {
+  return (lsGet('wa_server_url') || 'http://localhost:3000').replace(/\/$/, '');
+}
+
+async function pingServer() {
+  try {
+    var r = await fetch(getServerUrl() + '/api/status', { signal: AbortSignal.timeout(3000) });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    var d = await r.json();
+    serverConnected = true;
+    waServerStatus = d.waStatus;
+    updateSrvBar(d);
+    syncServerLog();
+    syncServerQueue();
+  } catch (e) {
+    serverConnected = false;
+    waServerStatus = 'disconnected';
+    updateSrvBar(null);
+  }
+}
+
+function updateSrvBar(d) {
+  var bar = document.getElementById('srv-bar');
+  var dot = document.getElementById('srv-dot');
+  var msg = document.getElementById('srv-msg');
+  var waEl = document.getElementById('srv-wa-status');
+  var qrBtn = document.getElementById('btn-show-qr');
+  var modeEl = document.getElementById('sb-send-mode');
+  var setDetail = document.getElementById('set-wa-detail');
+  var setQrBtn = document.getElementById('set-qr-btn');
+  var srvStat = document.getElementById('srv-settings-status');
+
+  if (!d) {
+    bar.className = '';
+    dot.className = 'srv-dot err';
+    msg.textContent = '后端服务器未连接（消息将使用 wa.me 链接模拟发送）';
+    waEl.textContent = '';
+    if (qrBtn) qrBtn.style.display = 'none';
+    if (modeEl) { modeEl.className = 'real-send-badge sim'; modeEl.textContent = '⚙️ 模拟发送'; }
+    if (setDetail) setDetail.textContent = '服务器未连接';
+    if (srvStat) { srvStat.textContent = '❌ 未连接'; srvStat.style.color = 'var(--red)'; }
+    var qi = document.getElementById('queue-mode-info');
+    if (qi) qi.innerHTML = '<strong>⚙️ 模拟模式：</strong>后端服务器未运行，消息通过 wa.me 链接手动发送。<a href="#" onclick="openSrvHelp();return false" style="color:var(--gold)">启动后端</a>即可真实自动发送。';
+    return;
+  }
+
+  var waReady = d.waStatus === 'ready';
+  if (waReady) {
+    bar.className = 'connected';
+    dot.className = 'srv-dot on';
+    msg.textContent = '后端已连接 · 消息将通过 WhatsApp 真实发送';
+    waEl.textContent = '✅ WhatsApp 已就绪';
+    waEl.style.color = 'var(--wa)';
+    if (qrBtn) qrBtn.style.display = 'none';
+    if (modeEl) { modeEl.className = 'real-send-badge'; modeEl.textContent = '✅ 真实发送'; }
+    if (setDetail) { setDetail.textContent = '✅ WhatsApp 已连接，可发送消息'; setDetail.style.color = 'var(--wa)'; }
+    if (setQrBtn) setQrBtn.style.display = 'none';
+    if (srvStat) { srvStat.textContent = '✅ 已连接 · ' + d.waStatus; srvStat.style.color = 'var(--wa)'; }
+    var qi = document.getElementById('queue-mode-info');
+    if (qi) qi.innerHTML = '<strong>✅ 真实发送模式：</strong>后端已连接，点击「发送」后消息将通过你的 WhatsApp 真实发出。';
+  } else if (d.waStatus === 'qr_ready') {
+    bar.className = 'warning';
+    dot.className = 'srv-dot warn';
+    msg.textContent = '后端已连接 · WhatsApp 待扫码登录';
+    waEl.textContent = '📱 等待扫码';
+    waEl.style.color = 'var(--gold)';
+    if (qrBtn) qrBtn.style.display = '';
+    if (modeEl) { modeEl.className = 'real-send-badge sim'; modeEl.textContent = '📱 待扫码'; }
+    if (setDetail) { setDetail.textContent = '待扫码登录'; setDetail.style.color = 'var(--gold)'; }
+    if (setQrBtn) setQrBtn.style.display = '';
+    if (srvStat) { srvStat.textContent = '⚠️ 待扫码'; srvStat.style.color = 'var(--gold)'; }
+  } else {
+    bar.className = 'warning';
+    dot.className = 'srv-dot warn';
+    msg.textContent = '后端已连接 · WhatsApp 正在初始化（' + d.waStatus + '）';
+    waEl.textContent = d.waStatus;
+    if (modeEl) { modeEl.className = 'real-send-badge sim'; modeEl.textContent = '⏳ 初始化中'; }
+    if (srvStat) { srvStat.textContent = '⏳ ' + d.waStatus; srvStat.style.color = 'var(--gold)'; }
+  }
+}
+
+// ── Real send via server ──
+async function realSend(item) {
+  try {
+    var r = await fetch(getServerUrl() + '/api/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        phone: item.phone,
+        message: item.msg,
+        name: item.name,
+        ruleName: item.ruleName,
+        tplName: item.tplName,
+        flow: item.flow
+      })
+    });
+    var d = await r.json();
+    return d;
+  } catch (e) {
+    return { ok: false, msg: '网络错误：' + e.message };
+  }
+}
+
+// ── Override markSent to use real server when available ──
+var _origMarkSent = markSent;
+markSent = async function(id) {
+  var item = queue.find(function(q) { return q.id === id; });
+  if (!item) return;
+
+  if (serverConnected && waServerStatus === 'ready' && item.phone) {
+    // Real send
+    var result = await realSend(item);
+    if (result.ok) {
+      // Remove from queue and log as sent
+      var idx = queue.findIndex(function(q) { return q.id === id; });
+      if (idx >= 0) {
+        sendLog.unshift({id:'l_'+Date.now(),ts:Date.now(),_ts:Date.now(),_dedupKey:'',name:item.name,phone:item.phone,flow:item.flow,ruleName:item.ruleName,msgPrev:item.msg.slice(0,60)+'…',status:'sent',note:'✅ 真实发送'});
+        if (sendLog.length > 200) sendLog = sendLog.slice(0, 150);
+        queue.splice(idx, 1);
+        saveAll(); updateQueueBadge(); updateDashStats(); renderQueue(); renderDashLog(); renderLog();
+        toast('✅ 消息已通过 WhatsApp 真实发送！');
+      }
+    } else {
+      toast('❌ 发送失败：' + (result.msg || '未知错误'));
+    }
+  } else {
+    // Fallback: original wa.me behavior
+    setTimeout(function() {
+      var idx = queue.findIndex(function(q) { return q.id === id; });
+      if (idx < 0) return;
+      var item = queue[idx];
+      sendLog.unshift({id:'l_'+Date.now(),ts:Date.now(),_ts:Date.now(),_dedupKey:'',name:item.name,phone:item.phone,flow:item.flow,ruleName:item.ruleName,msgPrev:item.msg.slice(0,60)+'…',status:'sent',note:'wa.me链接'});
+      if (sendLog.length > 200) sendLog = sendLog.slice(0, 150);
+      queue.splice(idx, 1);
+      saveAll(); updateQueueBadge(); updateDashStats(); renderQueue(); renderDashLog(); renderLog();
+    }, 800);
+  }
+};
+
+// ── Override sendAllQueue for batch real send ──
+var _origSendAll = sendAllQueue;
+sendAllQueue = async function() {
+  if (!queue.length) { toast('队列为空'); return; }
+
+  if (serverConnected && waServerStatus === 'ready') {
+    // Real batch send
+    var withPhone = queue.filter(function(q) { return q.phone; });
+    if (!withPhone.length) { toast('队列中没有有效电话号码'); return; }
+
+    toast('📤 正在发送 ' + withPhone.length + ' 条消息…');
+    try {
+      var r = await fetch(getServerUrl() + '/api/send-batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: withPhone.map(function(q) { return { phone: q.phone, message: q.msg, name: q.name, flow: q.flow, ruleName: q.ruleName, tplName: q.tplName }; }),
+          delayMs: 2500
+        })
+      });
+      var d = await r.json();
+      // Mark all with phone as sent
+      withPhone.forEach(function(item) {
+        var idx = queue.findIndex(function(q) { return q.id === item.id; });
+        if (idx >= 0) {
+          sendLog.unshift({id:'l_'+Date.now()+Math.random(),ts:Date.now(),_ts:Date.now(),_dedupKey:'',name:item.name,phone:item.phone,flow:item.flow,ruleName:item.ruleName,msgPrev:item.msg.slice(0,60)+'…',status:'sent',note:'批量真实发送'});
+          queue.splice(queue.findIndex(function(q) { return q.id === item.id; }), 1);
+        }
+      });
+      saveAll(); updateQueueBadge(); updateDashStats(); renderQueue(); renderDashLog(); renderLog();
+      toast('✅ 已发送 ' + (d.successCount||0) + ' 条，失败 ' + (d.failCount||0) + ' 条');
+    } catch(e) {
+      toast('❌ 批量发送失败：' + e.message);
+    }
+  } else {
+    // Fallback: original behavior
+    _origSendAll();
+  }
+};
+
+// ── Sync server log to local ──
+async function syncServerLog() {
+  try {
+    var r = await fetch(getServerUrl() + '/api/log?limit=50');
+    var d = await r.json();
+    if (d.ok && d.items && d.items.length) {
+      // Merge server log with local (server is source of truth for 'sent')
+      var existIds = new Set(sendLog.map(function(l) { return l.id; }));
+      var newItems = d.items.filter(function(l) { return !existIds.has(l.id); });
+      if (newItems.length) {
+        sendLog = [...newItems, ...sendLog].slice(0, 200);
+        lsSave('wa_crm_log', sendLog);
+        renderLog(); renderDashLog(); updateDashStats();
+      }
+    }
+  } catch(e) {}
+}
+
+// ── Sync server queue ──
+async function syncServerQueue() {
+  try {
+    var r = await fetch(getServerUrl() + '/api/queue');
+    var d = await r.json();
+    // Just for display — server queue items show as pending
+    if (d.ok && d.items && d.items.length) {
+      // Items in server queue that aren't in local queue
+      var existIds = new Set(queue.map(function(q) { return q.id; }));
+      d.items.filter(function(q) { return !existIds.has(q.id); }).forEach(function(item) {
+        queue.unshift(item);
+      });
+      updateQueueBadge(); renderQueue();
+    }
+  } catch(e) {}
+}
+
+// ── Save server URL ──
+function saveServerUrl() {
+  var val = (document.getElementById('set-server-url').value || '').trim();
+  if (val) {
+    lsSave('wa_server_url', val);
+    toast('🔄 正在连接 ' + val + '…');
+    pingServer();
+  }
+}
+
+// ── Load server URL into settings UI ──
+var _origLoadSettingsUI = loadSettingsUI;
+loadSettingsUI = function() {
+  _origLoadSettingsUI();
+  var el = document.getElementById('set-server-url');
+  if (el) el.value = getServerUrl();
+};
+
+// ── Show QR code ──
+async function showQR() {
+  document.getElementById('qr-modal').classList.add('show');
+  fetchQR();
+}
+
+async function fetchQR() {
+  var imgEl = document.getElementById('qr-img');
+  var loadEl = document.getElementById('qr-loading');
+  var errEl = document.getElementById('qr-error');
+  imgEl.style.display = 'none';
+  loadEl.style.display = '';
+  errEl.style.display = 'none';
+
+  try {
+    var r = await fetch(getServerUrl() + '/api/qr');
+    var d = await r.json();
+    if (d.ok && d.dataUrl) {
+      imgEl.src = d.dataUrl;
+      imgEl.style.display = 'block';
+      loadEl.style.display = 'none';
+    } else {
+      loadEl.style.display = 'none';
+      errEl.textContent = d.msg || '无法获取二维码';
+      errEl.style.display = '';
+    }
+  } catch(e) {
+    loadEl.style.display = 'none';
+    errEl.textContent = '服务器未响应：' + e.message;
+    errEl.style.display = '';
+  }
+}
+
+async function serverLogout() {
+  if (!confirm('确定登出 WhatsApp？需重新扫码登录。')) return;
+  try {
+    var r = await fetch(getServerUrl() + '/api/logout', { method: 'POST' });
+    var d = await r.json();
+    toast(d.msg || '已登出');
+    setTimeout(pingServer, 2000);
+  } catch(e) { toast('登出失败：' + e.message); }
+}
+
+function openSrvHelp() {
+  document.getElementById('help-modal').classList.add('show');
+}
+
+// Auto-ping server every 8 seconds
+setInterval(pingServer, 8000);
+// Initial ping after 1 second
+setTimeout(pingServer, 1000);
+</script>
+</body>
+</html>
